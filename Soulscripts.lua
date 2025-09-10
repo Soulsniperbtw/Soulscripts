@@ -14,7 +14,6 @@ local Noclipping = false
 local FlySpeed = 50
 local BodyGyro, BodyVelocity
 local MarkedPosition
-local currentTool
 
 --// KEY SYSTEM
 local CorrectKey = "SOULS"
@@ -77,26 +76,7 @@ InfoLabel.Font = Enum.Font.GothamBold
 InfoLabel.TextSize = 16
 InfoLabel.Parent = KeyFrame
 
---// TOOL PRESERVATION
-local function PreserveTool()
-    -- Keep tool attached properly while moving
-    currentTool = Humanoid:FindFirstChildOfClass("Tool")
-    if currentTool then
-        currentTool.Parent = Character
-        local handle = currentTool:FindFirstChild("Handle")
-        if handle then
-            local weld = handle:FindFirstChild("StealWeld") or Instance.new("Weld")
-            weld.Name = "StealWeld"
-            weld.Part0 = Character:FindFirstChild("RightHand")
-            weld.Part1 = handle
-            weld.C0 = CFrame.new()
-            weld.C1 = CFrame.new()
-            weld.Parent = handle
-        end
-    end
-end
-
---// GUI FUNCTION
+--// MAIN GUI FUNCTION
 local function CreateMainGUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "FlyNoclipGui"
@@ -290,29 +270,25 @@ local function CreateMainGUI()
         end
     end)
 
-    --// FLY MOVEMENT & TOOL PRESERVATION
+    --// FLY MOVEMENT
     RunService.Heartbeat:Connect(function()
-        PreserveTool()
-
         if Flying and BodyVelocity and BodyGyro then
             local moveVector = Vector3.new(
                 (UserInputService:IsKeyDown(Enum.KeyCode.D) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.A) and 1 or 0),
                 0,
                 (UserInputService:IsKeyDown(Enum.KeyCode.S) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.W) and 1 or 0)
             )
-
             if moveVector.Magnitude > 0 then
                 local targetVelocity = workspace.CurrentCamera.CFrame:VectorToWorldSpace(moveVector.Unit * FlySpeed)
                 BodyVelocity.Velocity = BodyVelocity.Velocity:Lerp(targetVelocity, 0.15)
             else
                 BodyVelocity.Velocity = BodyVelocity.Velocity:Lerp(Vector3.new(), 0.15)
             end
-
             BodyGyro.CFrame = BodyGyro.CFrame:Lerp(workspace.CurrentCamera.CFrame, 0.1)
         end
     end)
 
-    --// MARK & INSTANT STEAL
+    --// MARK & INSTANT STEAL (NEW FIX)
     MarkBtn.MouseButton1Click:Connect(function()
         MarkedPosition = RootPart.Position
     end)
@@ -320,38 +296,37 @@ local function CreateMainGUI()
     StealBtn.MouseButton1Click:Connect(function()
         if not MarkedPosition then return end
 
-        local bv = Instance.new("BodyVelocity")
-        bv.Name = "StealVelocity"
-        bv.MaxForce = Vector3.new(1e5,1e5,1e5)
-        bv.Velocity = Vector3.new()
-        bv.Parent = RootPart
+        -- Collect all parts: character + held tool
+        local partsToMove = {}
+        for _, part in ipairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then table.insert(partsToMove, part) end
+        end
+        local tool = Humanoid:FindFirstChildOfClass("Tool")
+        if tool then
+            for _, part in ipairs(tool:GetDescendants()) do
+                if part:IsA("BasePart") then table.insert(partsToMove, part) end
+            end
+        end
 
-        local bg = Instance.new("BodyGyro")
-        bg.Name = "StealGyro"
-        bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
-        bg.CFrame = RootPart.CFrame
-        bg.Parent = RootPart
-
+        -- Move parts smoothly
         local connection
         connection = RunService.Heartbeat:Connect(function()
-            PreserveTool()
-
-            local direction = (MarkedPosition - RootPart.Position)
+            local direction = MarkedPosition - RootPart.Position
             local distance = direction.Magnitude
             if distance < 1 then
-                bv:Destroy()
-                bg:Destroy()
                 connection:Disconnect()
+                for _, part in ipairs(partsToMove) do
+                    part.Velocity = Vector3.new()
+                end
                 RootPart.CFrame = CFrame.new(MarkedPosition)
             else
-                local frictionFactor = math.clamp(distance / 20, 0.2, 1)
-                local baseSpeed = math.clamp(distance * 2, 5, 40)
-                local speed = baseSpeed * frictionFactor
-                bv.Velocity = bv.Velocity:Lerp(direction.Unit * speed, 0.1)
-
-                local tiltAngle = math.rad(-30 * frictionFactor)
-                local lookCFrame = CFrame.new(RootPart.Position, RootPart.Position + direction)
-                bg.CFrame = lookCFrame * CFrame.Angles(tiltAngle, 0, 0)
+                local speed = math.clamp(distance * 2, 5, 25)
+                local velocity = direction.Unit * speed
+                for _, part in ipairs(partsToMove) do
+                    part.Velocity = velocity
+                end
+                local tiltAngle = math.rad(-25)
+                RootPart.CFrame = CFrame.new(RootPart.Position, RootPart.Position + direction) * CFrame.Angles(tiltAngle, 0, 0)
             end
         end)
     end)
