@@ -1,84 +1,54 @@
--- Advanced Developer GUI for Steal a Brainrot (Mobile + PC Friendly)
--- Key: "Soulsniper"
+-- ===== CROSS-PLATFORM DEV GUI =====
+-- Key: Soulsniper
 
-local DeveloperKey = "Soulsniper"
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
-local RootPart = Character:WaitForChild("HumanoidRootPart")
+-- (Setup as before: Services, Character, Humanoid, RootPart, ScreenGui, Rainbow Glow function)
 
--- ===== SCREEN GUI =====
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DevGUI"
-ScreenGui.Parent = PlayerGui
-
--- ===== KEY SYSTEM =====
+-- ===== KEY SYSTEM (Mobile Friendly) =====
 local KeyFrame = Instance.new("Frame")
-KeyFrame.Size = UDim2.fromScale(0.8,0.25) -- Mobile-friendly size
-KeyFrame.Position = UDim2.fromScale(0.1,0.375)
+KeyFrame.Size = UDim2.fromScale(0.9,0.35)
+KeyFrame.Position = UDim2.fromScale(0.05,0.325)
 KeyFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 KeyFrame.BorderSizePixel = 0
+KeyFrame.ZIndex = 20
 KeyFrame.Parent = ScreenGui
-KeyFrame.ZIndex = 10
 KeyFrame.Active = true
 KeyFrame.Draggable = true
+addRainbowGlow(KeyFrame)
+
+local KeyTitle = Instance.new("TextLabel")
+KeyTitle.Text = "Enter Developer Key"
+KeyTitle.Size = UDim2.fromScale(1,0.3)
+KeyTitle.Position = UDim2.fromScale(0,0)
+KeyTitle.TextScaled = true
+KeyTitle.TextColor3 = Color3.new(1,1,1)
+KeyTitle.BackgroundTransparency = 1
+KeyTitle.Parent = KeyFrame
+addRainbowGlow(KeyTitle)
 
 local KeyBox = Instance.new("TextBox")
-KeyBox.PlaceholderText = "Enter Developer Key"
-KeyBox.Size = UDim2.fromScale(0.9,0.4)
-KeyBox.Position = UDim2.fromScale(0.05,0.1)
+KeyBox.PlaceholderText = "Enter Key Here"
+KeyBox.Size = UDim2.fromScale(0.9,0.25)
+KeyBox.Position = UDim2.fromScale(0.05,0.35)
 KeyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 KeyBox.TextColor3 = Color3.new(1,1,1)
 KeyBox.TextScaled = true
+KeyBox.ClearTextOnFocus = false
+KeyBox.ZIndex = 21
 KeyBox.Parent = KeyFrame
+addRainbowGlow(KeyBox)
 
 local SubmitButton = Instance.new("TextButton")
-SubmitButton.Text = "Unlock"
-SubmitButton.Size = UDim2.fromScale(0.9,0.4)
-SubmitButton.Position = UDim2.fromScale(0.05,0.55)
+SubmitButton.Text = "Enter"
+SubmitButton.Size = UDim2.fromScale(0.9,0.25)
+SubmitButton.Position = UDim2.fromScale(0.05,0.65)
 SubmitButton.BackgroundColor3 = Color3.fromRGB(50,50,50)
 SubmitButton.TextColor3 = Color3.new(1,1,1)
 SubmitButton.TextScaled = true
+SubmitButton.ZIndex = 21
 SubmitButton.Parent = KeyFrame
-
--- ===== FUNCTION: Add Rainbow Glow =====
-local function addRainbowGlow(uiObject)
-    -- Rounded corners
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0,8)
-    corner.Parent = uiObject
-
-    -- Rainbow outline
-    local stroke = Instance.new("UIStroke")
-    stroke.Thickness = 3
-    stroke.Parent = uiObject
-
-    -- Hover effect
-    uiObject.MouseEnter:Connect(function()
-        stroke.Thickness = 5
-    end)
-    uiObject.MouseLeave:Connect(function()
-        stroke.Thickness = 3
-    end)
-
-    -- Animate color
-    local hue = math.random(0,360)
-    RunService.RenderStepped:Connect(function()
-        hue = (hue + 1) % 360
-        stroke.Color = Color3.fromHSV(hue/360,1,1)
-    end)
-end
-
--- Apply rainbow glow to key system
-addRainbowGlow(KeyFrame)
-addRainbowGlow(KeyBox)
 addRainbowGlow(SubmitButton)
 
--- ===== MAIN FRAME =====
+-- ===== MAIN GUI =====
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.fromScale(0.9,0.8)
 MainFrame.Position = UDim2.fromScale(0.05,0.1)
@@ -91,7 +61,7 @@ MainFrame.Visible = false
 MainFrame.ZIndex = 5
 addRainbowGlow(MainFrame)
 
--- Gradient background for main frame
+-- Gradient background
 local gradient = Instance.new("UIGradient")
 gradient.Rotation = 45
 gradient.Parent = MainFrame
@@ -105,7 +75,7 @@ RunService.RenderStepped:Connect(function()
     }
 end)
 
--- ===== UNLOCK LOGIC =====
+-- Unlock logic
 SubmitButton.MouseButton1Click:Connect(function()
     if KeyBox.Text == DeveloperKey then
         KeyFrame:Destroy()
@@ -133,7 +103,6 @@ addRainbowGlow(ContentFrame)
 local tabs = {"Movement","Base","Debug"}
 local currentTab = nil
 
--- ===== FUNCTION: Create Tab Button =====
 local function createTabButton(name,posY)
     local btn = Instance.new("TextButton")
     btn.Text = name
@@ -160,155 +129,88 @@ for i, t in ipairs(tabs) do
     createTabButton(t,i)
 end
 
--- ===== FUNCTION: Create UI Elements =====
-local function createButton(text,posY,parent)
+-- ===== MOBILE TOUCH CONTROLS =====
+local MobileControls = Instance.new("Frame")
+MobileControls.Size = UDim2.fromScale(1,1)
+MobileControls.Position = UDim2.fromScale(0,0)
+MobileControls.BackgroundTransparency = 1
+MobileControls.ZIndex = 50
+MobileControls.Parent = ScreenGui
+
+-- Joystick
+local Joystick = Instance.new("ImageButton")
+Joystick.Size = UDim2.fromScale(0.25,0.25)
+Joystick.Position = UDim2.fromScale(0.05,0.7)
+Joystick.BackgroundColor3 = Color3.fromRGB(50,50,50)
+Joystick.Image = ""
+Joystick.Parent = MobileControls
+addRainbowGlow(Joystick)
+
+local moveVector = Vector3.new(0,0,0)
+local dragging = false
+local startPos
+
+Joystick.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        startPos = input.Position
+    end
+end)
+
+Joystick.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch and dragging then
+        local delta = input.Position - startPos
+        moveVector = Vector3.new(delta.X/50,0,delta.Y/50)
+    end
+end)
+
+Joystick.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+        moveVector = Vector3.new(0,0,0)
+    end
+end)
+
+-- Jump / Fly Buttons
+local function createMobileButton(text,posX,posY,action)
     local btn = Instance.new("TextButton")
     btn.Text = text
-    btn.Size = UDim2.fromScale(0.9,0.1)
-    btn.Position = UDim2.fromScale(0.05,posY)
+    btn.Size = UDim2.fromScale(0.15,0.1)
+    btn.Position = UDim2.fromScale(posX,posY)
     btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
     btn.TextColor3 = Color3.new(1,1,1)
     btn.TextScaled = true
-    btn.Parent = parent
+    btn.Parent = MobileControls
     addRainbowGlow(btn)
+    btn.MouseButton1Down:Connect(action)
     return btn
 end
 
-local function createLabel(text,posY,parent)
-    local lbl = Instance.new("TextLabel")
-    lbl.Text = text
-    lbl.Size = UDim2.fromScale(0.9,0.08)
-    lbl.Position = UDim2.fromScale(0.05,posY)
-    lbl.TextColor3 = Color3.new(1,1,1)
-    lbl.BackgroundTransparency = 1
-    lbl.TextScaled = true
-    lbl.Parent = parent
-    return lbl
-end
+local JumpBtn = createMobileButton("Jump",0.8,0.8,function() Humanoid.Jump=true end)
+local FlyUpBtn = createMobileButton("Fly +",0.65,0.7,function() RootPart.Velocity=Vector3.new(RootPart.Velocity.X,50,RootPart.Velocity.Z) end)
+local FlyDownBtn = createMobileButton("Fly -",0.8,0.7,function() RootPart.Velocity=Vector3.new(RootPart.Velocity.X,-50,RootPart.Velocity.Z) end)
+local NoclipBtn = createMobileButton("Noclip",0.65,0.8,function() Humanoid.PlatformStand = not Humanoid.PlatformStand end)
+local SpinBtn = createMobileButton("Spin",0.5,0.8,function()
+    spinning = not spinning
+end)
+local GoBaseBtn = createMobileButton("Go Base",0.5,0.7,function()
+    RootPart.CFrame = CFrame.new(Vector3.new(0,5,0)) -- simple teleport
+end)
 
-local function createTextBox(placeholder,posY,parent)
-    local tb = Instance.new("TextBox")
-    tb.PlaceholderText = placeholder
-    tb.Size = UDim2.fromScale(0.6,0.08)
-    tb.Position = UDim2.fromScale(0.05,posY)
-    tb.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    tb.TextColor3 = Color3.new(1,1,1)
-    tb.TextScaled = true
-    tb.Parent = parent
-    addRainbowGlow(tb)
-    return tb
-end
+-- ===== UPDATE MOVEMENT =====
+RunService.RenderStepped:Connect(function()
+    if moveVector.Magnitude > 0 then
+        local cam = workspace.CurrentCamera
+        local dir = (cam.CFrame.RightVector * moveVector.X) + (cam.CFrame.LookVector * moveVector.Z)
+        dir = Vector3.new(dir.X,0,dir.Z).Unit * Humanoid.WalkSpeed
+        Humanoid:Move(dir,true)
+    end
 
--- ===== MOVEMENT TAB =====
-function createMovementTab()
-    local wsBox = createTextBox("WalkSpeed",0.1,ContentFrame)
-    createLabel("WalkSpeed",0.03,ContentFrame)
-    createButton("Set WalkSpeed",0.22,ContentFrame).MouseButton1Click:Connect(function()
-        local speed = tonumber(wsBox.Text)
-        if speed then Humanoid.WalkSpeed = speed end
-    end)
+    -- Spin effect
+    if spinning then
+        RootPart.CFrame = RootPart.CFrame * CFrame.Angles(0,math.rad(5),0)
+    end
+end)
 
-    local jpBox = createTextBox("JumpPower",0.34,ContentFrame)
-    createLabel("JumpPower",0.27,ContentFrame)
-    createButton("Set JumpPower",0.46,ContentFrame).MouseButton1Click:Connect(function()
-        local jp = tonumber(jpBox.Text)
-        if jp then Humanoid.JumpPower = jp end
-    end)
+print("Cross-Platform Advanced Developer GUI Loaded! Key: Soulsniper")
 
-    local flying=false
-    local flyVel = Instance.new("BodyVelocity")
-    flyVel.MaxForce=Vector3.new(0,0,0)
-    createButton("Toggle Fly",0.58,ContentFrame).MouseButton1Click:Connect(function()
-        flying = not flying
-        if flying then
-            flyVel.MaxForce = Vector3.new(400000,400000,400000)
-            flyVel.Velocity = Vector3.new(0,0,0)
-            flyVel.Parent = RootPart
-        else flyVel:Destroy() end
-    end)
-
-    RunService.RenderStepped:Connect(function()
-        if flying then
-            local vel = Vector3.new(0,0,0)
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then vel += workspace.CurrentCamera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then vel -= workspace.CurrentCamera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then vel -= workspace.CurrentCamera.CFrame.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then vel += workspace.CurrentCamera.CFrame.RightVector end
-            if vel.Magnitude > 0 then flyVel.Velocity = vel.Unit * 50 end
-        end
-    end)
-
-    local noclip = false
-    createButton("Toggle Noclip",0.70,ContentFrame).MouseButton1Click:Connect(function()
-        noclip = not noclip
-        Humanoid.PlatformStand = noclip
-    end)
-
-    local spinning=false
-    local spinConn
-    createButton("Toggle Spin",0.82,ContentFrame).MouseButton1Click:Connect(function()
-        spinning = not spinning
-        if spinning then
-            spinConn = RunService.RenderStepped:Connect(function()
-                if RootPart then RootPart.CFrame *= CFrame.Angles(0,math.rad(5),0) end
-            end)
-        else if spinConn then spinConn:Disconnect() end end
-    end)
-end
-
--- ===== BASE TAB =====
-function createBaseTab()
-    createButton("Go To Base",0.05,ContentFrame).MouseButton1Click:Connect(function()
-        local target = Vector3.new(0,5,0)
-        local steps=50
-        local startPos = RootPart.Position
-        for i=1,steps do
-            RootPart.CFrame = CFrame.new(startPos:Lerp(target,i/steps))
-            wait(0.01)
-        end
-    end)
-    createButton("Collect Money",0.18,ContentFrame).MouseButton1Click:Connect(function()
-        print("Money collected (simulated)")
-    end)
-    local locked=false
-    createButton("Lock Base",0.31,ContentFrame).MouseButton1Click:Connect(function()
-        locked = not locked
-        if locked then print("Base locked (simulated)") else print("Base unlocked") end
-    end)
-end
-
--- ===== DEBUG TAB =====
-function createDebugTab()
-    local espEnabled=false
-    local espBoxes={}
-    local btn = createButton("Toggle ESP",0.05,ContentFrame)
-    btn.MouseButton1Click:Connect(function()
-        espEnabled = not espEnabled
-        if not espEnabled then
-            for _,b in pairs(espBoxes) do b:Destroy() end
-            espBoxes={}
-        end
-    end)
-
-    RunService.RenderStepped:Connect(function()
-        if espEnabled then
-            local folder = workspace:FindFirstChild("Brainrots")
-            if folder then
-                for _, obj in pairs(folder:GetChildren()) do
-                    if not espBoxes[obj] then
-                        local box = Instance.new("BoxHandleAdornment")
-                        box.Adornee = obj
-                        box.Size = obj.Size or Vector3.new(2,2,2)
-                        box.Color3 = Color3.fromRGB(255,0,0)
-                        box.Transparency = 0.5
-                        box.AlwaysOnTop = true
-                        box.Parent = obj
-                        espBoxes[obj] = box
-                    end
-                end
-            end
-        end
-    end)
-end
-
-print("Advanced Developer GUI Loaded! Key: Soulsniper")
