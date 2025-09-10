@@ -1,12 +1,12 @@
---[[
-    Souls Gui Key System
-    Author: (You)
-    Purpose: Educational use in your own game
+--[[ 
+    Souls Gui Key System (Educational Debug Version)
+    Author: You
+    Purpose: Test anticheat bypasses in your own game
     Features:
-    - Red background with "Souls Gui" title
-    - Key entry (password: Soulsniperbtw)
-    - Unlocks menu with Fly and Noclip toggles
-]]
+    - Smaller centered key screen
+    - Movable GUI (draggable by title / anywhere)
+    - Fly & Noclip using CFrame-based movement
+--]]
 
 --// Services
 local Players = game:GetService("Players")
@@ -15,7 +15,6 @@ local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
 local RootPart = Character:WaitForChild("HumanoidRootPart")
 
 --// Config
@@ -24,34 +23,35 @@ local CorrectKey = "Soulsniperbtw"
 --// Variables
 local Flying = false
 local Noclipping = false
-local BodyGyro, BodyVelocity
 
 --// GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "SoulsGui"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Background
+-- Background (Key Screen)
 local Background = Instance.new("Frame")
-Background.Size = UDim2.new(1,0,1,0)
-Background.BackgroundColor3 = Color3.fromRGB(200,0,0) -- red
+Background.Size = UDim2.new(0,400,0,250)
+Background.AnchorPoint = Vector2.new(0.5,0.5)
+Background.Position = UDim2.new(0.5,0,0.5,0)
+Background.BackgroundColor3 = Color3.fromRGB(200,0,0)
 Background.Parent = ScreenGui
 
 -- Title
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1,0,0,60)
-Title.Position = UDim2.new(0,0,0,20)
+Title.Size = UDim2.new(1,0,0,40)
+Title.Position = UDim2.new(0,0,0,0)
 Title.Text = "Souls Gui"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 36
-Title.TextColor3 = Color3.fromRGB(128,0,128) -- purple
-Title.BackgroundTransparency = 1
+Title.TextSize = 28
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+Title.BackgroundColor3 = Color3.fromRGB(120,0,0)
 Title.Parent = Background
 
 -- Key Box
 local KeyBox = Instance.new("TextBox")
-KeyBox.Size = UDim2.new(0,300,0,50)
-KeyBox.Position = UDim2.new(0.5,-150,0.5,-25)
+KeyBox.Size = UDim2.new(0,250,0,40)
+KeyBox.Position = UDim2.new(0.5,-125,0.5,-20)
 KeyBox.PlaceholderText = "Enter Key..."
 KeyBox.Text = ""
 KeyBox.Font = Enum.Font.GothamBold
@@ -62,8 +62,8 @@ KeyBox.Parent = Background
 
 -- Submit Button
 local Submit = Instance.new("TextButton")
-Submit.Size = UDim2.new(0,200,0,40)
-Submit.Position = UDim2.new(0.5,-100,0.5,40)
+Submit.Size = UDim2.new(0,180,0,40)
+Submit.Position = UDim2.new(0.5,-90,1,-50)
 Submit.Text = "Submit"
 Submit.Font = Enum.Font.GothamBold
 Submit.TextSize = 20
@@ -73,8 +73,9 @@ Submit.Parent = Background
 
 -- Menu (hidden until key is correct)
 local MenuFrame = Instance.new("Frame")
-MenuFrame.Size = UDim2.new(0,250,0,200)
-MenuFrame.Position = UDim2.new(0.5,-125,0.5,-100)
+MenuFrame.Size = UDim2.new(0,250,0,160)
+MenuFrame.AnchorPoint = Vector2.new(0.5,0.5)
+MenuFrame.Position = UDim2.new(0.5,0,0.5,0)
 MenuFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
 MenuFrame.Visible = false
 MenuFrame.Parent = ScreenGui
@@ -98,29 +99,65 @@ NoclipButton.TextColor3 = Color3.fromRGB(255,255,255)
 NoclipButton.BackgroundColor3 = Color3.fromRGB(60,60,60)
 NoclipButton.Parent = MenuFrame
 
---// Flight Functions
-local function StartFlying()
-    if Flying then return end
-    Flying = true
+--// Make GUI draggable
+local function MakeDraggable(frame, dragHandle)
+    local dragging, dragInput, dragStart, startPos
+    dragHandle = dragHandle or frame
 
-    BodyGyro = Instance.new("BodyGyro")
-    BodyGyro.MaxTorque = Vector3.new(1e6,1e6,1e6)
-    BodyGyro.CFrame = RootPart.CFrame
-    BodyGyro.Parent = RootPart
+    dragHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
 
-    BodyVelocity = Instance.new("BodyVelocity")
-    BodyVelocity.MaxForce = Vector3.new(1e6,1e6,1e6)
-    BodyVelocity.Velocity = Vector3.new()
-    BodyVelocity.Parent = RootPart
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    dragHandle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
 end
 
-local function StopFlying()
-    Flying = false
-    if BodyGyro then BodyGyro:Destroy() BodyGyro = nil end
-    if BodyVelocity then BodyVelocity:Destroy() BodyVelocity = nil end
-end
+MakeDraggable(Background, Title) -- drag key screen by title
+MakeDraggable(MenuFrame) -- drag menu anywhere
 
---// Noclip Handler
+--// Fly movement loop
+RunService.Heartbeat:Connect(function()
+    if Flying then
+        local camCF = workspace.CurrentCamera.CFrame
+        local moveDir = Vector3.zero
+
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir += camCF.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir -= camCF.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir -= camCF.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir += camCF.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.yAxis end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then moveDir -= Vector3.yAxis end
+
+        if moveDir.Magnitude > 0 then
+            RootPart.CFrame = RootPart.CFrame + (moveDir.Unit * 2) -- smooth step
+        end
+    end
+end)
+
+--// Noclip handler
 RunService.Stepped:Connect(function()
     if Noclipping then
         for _, part in ipairs(Character:GetDescendants()) do
@@ -128,46 +165,19 @@ RunService.Stepped:Connect(function()
                 part.CanCollide = false
             end
         end
-    end
-end)
-
---// Movement Loop
-RunService.Heartbeat:Connect(function()
-    if Flying and BodyVelocity and BodyGyro then
-        local MoveVector = Vector3.new(
-            (UserInputService:IsKeyDown(Enum.KeyCode.D) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.A) and 1 or 0),
-            (UserInputService:IsKeyDown(Enum.KeyCode.Space) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) and 1 or 0),
-            (UserInputService:IsKeyDown(Enum.KeyCode.S) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.W) and 1 or 0)
-        )
-
-        if MoveVector.Magnitude > 0 then
-            BodyVelocity.Velocity = workspace.CurrentCamera.CFrame:VectorToWorldSpace(MoveVector.Unit * 50)
-        else
-            BodyVelocity.Velocity = Vector3.new()
-        end
-
-        BodyGyro.CFrame = workspace.CurrentCamera.CFrame
+        RootPart.Velocity = Vector3.zero
     end
 end)
 
 --// Button Connections
 FlyButton.MouseButton1Click:Connect(function()
-    if Flying then
-        StopFlying()
-        FlyButton.Text = "Toggle Fly (OFF)"
-    else
-        StartFlying()
-        FlyButton.Text = "Toggle Fly (ON)"
-    end
+    Flying = not Flying
+    FlyButton.Text = Flying and "Toggle Fly (ON)" or "Toggle Fly (OFF)"
 end)
 
 NoclipButton.MouseButton1Click:Connect(function()
     Noclipping = not Noclipping
-    if Noclipping then
-        NoclipButton.Text = "Toggle Noclip (ON)"
-    else
-        NoclipButton.Text = "Toggle Noclip (OFF)"
-    end
+    NoclipButton.Text = Noclipping and "Toggle Noclip (ON)" or "Toggle Noclip (OFF)"
 end)
 
 --// Key System
@@ -176,6 +186,7 @@ Submit.MouseButton1Click:Connect(function()
         Background.Visible = false
         MenuFrame.Visible = true
     else
-        KeyBox.Text = "Wrong Key!"
+        KeyBox.Text = ""
+        KeyBox.PlaceholderText = "Wrong Key!"
     end
 end)
