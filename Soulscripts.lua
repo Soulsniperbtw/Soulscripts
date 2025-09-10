@@ -87,7 +87,7 @@ InfoLabel.Font = Enum.Font.GothamBold
 InfoLabel.TextSize = 16
 InfoLabel.Parent = KeyFrame
 
---// MAIN GUI FUNCTION
+--// MAIN GUI
 local function CreateMainGUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "FlyNoclipGui"
@@ -129,26 +129,13 @@ local function CreateMainGUI()
     CloseBtn.Parent = MainFrame
     CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-    -- CONTAINERS
+    -- FLY
     local FlyFrame = Instance.new("Frame")
     FlyFrame.Size = UDim2.new(1,-20,0,60)
     FlyFrame.Position = UDim2.new(0,10,0,50)
     FlyFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
     FlyFrame.Parent = MainFrame
 
-    local NoclipFrame = Instance.new("Frame")
-    NoclipFrame.Size = UDim2.new(1,-20,0,60)
-    NoclipFrame.Position = UDim2.new(0,10,0,120)
-    NoclipFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    NoclipFrame.Parent = MainFrame
-
-    local StealFrame = Instance.new("Frame")
-    StealFrame.Size = UDim2.new(1,-20,0,60)
-    StealFrame.Position = UDim2.new(0,10,0,190)
-    StealFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    StealFrame.Parent = MainFrame
-
-    -- FLY
     local FlyToggle = Instance.new("TextButton")
     FlyToggle.Size = UDim2.new(0,80,0,40)
     FlyToggle.Position = UDim2.new(0,10,0,10)
@@ -184,6 +171,12 @@ local function CreateMainGUI()
     SpeedLabel.Parent = FlyFrame
 
     -- NOCLIP
+    local NoclipFrame = Instance.new("Frame")
+    NoclipFrame.Size = UDim2.new(1,-20,0,60)
+    NoclipFrame.Position = UDim2.new(0,10,0,120)
+    NoclipFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    NoclipFrame.Parent = MainFrame
+
     local NoclipToggle = Instance.new("TextButton")
     NoclipToggle.Size = UDim2.new(0,120,0,40)
     NoclipToggle.Position = UDim2.new(0,10,0,10)
@@ -193,48 +186,3 @@ local function CreateMainGUI()
     NoclipToggle.Font = Enum.Font.GothamBold
     NoclipToggle.TextSize = 18
     NoclipToggle.Parent = NoclipFrame
-
-    -- STEAL BUTTONS
-    local MarkBtn = Instance.new("TextButton")
-    MarkBtn.Size = UDim2.new(0,120,0,40)
-    MarkBtn.Position = UDim2.new(0,10,0,10)
-    MarkBtn.BackgroundColor3 = Color3.fromRGB(255,165,0)
-    MarkBtn.Text = "Mark Location"
-    MarkBtn.TextColor3 = Color3.fromRGB(0,0,0)
-    MarkBtn.Font = Enum.Font.GothamBold
-    MarkBtn.TextSize = 18
-    MarkBtn.Parent = StealFrame
-
-    local StealBtn = Instance.new("TextButton")
-    StealBtn.Size = UDim2.new(0,120,0,40)
-    StealBtn.Position = UDim2.new(0,150,0,10)
-    StealBtn.BackgroundColor3 = Color3.fromRGB(255,0,0)
-    StealBtn.Text = "Instant Steal"
-    StealBtn.TextColor3 = Color3.fromRGB(255,255,255)
-    StealBtn.Font = Enum.Font.GothamBold
-    StealBtn.TextSize = 18
-    StealBtn.Parent = StealFrame
-
-    local StealSpeedLabel = Instance.new("TextLabel")
-    StealSpeedLabel.Size = UDim2.new(0,50,0,30)
-    StealSpeedLabel.Position = UDim2.new(0,290,0,15)
-    StealSpeedLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    StealSpeedLabel.Text = tostring(StealSpeedMultiplier)
-    StealSpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
-    StealSpeedLabel.Parent = StealFrame
-
-    local PlusSpeedBtn = Instance.new("TextButton")
-    PlusSpeedBtn.Size = UDim2.new(0,30,0,30)
-    PlusSpeedBtn.Position = UDim2.new(0,350,0,15)
-    PlusSpeedBtn.BackgroundColor3 = Color3.fromRGB(0,255,255)
-    PlusSpeedBtn.Text = "+"
-    PlusSpeedBtn.TextColor3 = Color3.fromRGB(0,0,0)
-    PlusSpeedBtn.Parent = StealFrame
-
-    local MinusSpeedBtn = Instance.new("TextButton")
-    MinusSpeedBtn.Size = UDim2.new(0,30,0,30)
-    MinusSpeedBtn.Position = UDim2.new(0,390,0,15)
-    MinusSpeedBtn.BackgroundColor3 = Color3.fromRGB(255,100,100)
-    MinusSpeedBtn.Text = "-"
-    MinusSpeedBtn.TextColor3 = Color3.fromRGB(0,0,0)
-    MinusSpeedBtn.Parent = StealFrame
