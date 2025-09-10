@@ -53,7 +53,7 @@ KeyBox.TextColor3 = Color3.fromRGB(255,255,255)
 KeyBox.Font = Enum.Font.Gotham
 KeyBox.TextSize = 20
 KeyBox.ClearTextOnFocus = false
-KeyBox.PlaceholderText = "Type Key Here"
+KeyBox.PlaceholderText = "Enter Key Here"
 KeyBox.Parent = KeyFrame
 
 local SubmitBtn = Instance.new("TextButton")
@@ -215,3 +215,126 @@ local function CreateMainGUI()
         BodyGyro.MaxTorque = Vector3.new(1e6,1e6,1e6)
         BodyGyro.CFrame = RootPart.CFrame
         BodyGyro.P = 9e4
+        BodyGyro.Parent = RootPart
+
+        BodyVelocity = Instance.new("BodyVelocity")
+        BodyVelocity.MaxForce = Vector3.new(1e6,1e6,1e6)
+        BodyVelocity.Velocity = Vector3.new()
+        BodyVelocity.Parent = RootPart
+    end
+
+    local function StopFlying()
+        Flying = false
+        if BodyGyro then BodyGyro:Destroy() BodyGyro=nil end
+        if BodyVelocity then BodyVelocity:Destroy() BodyVelocity=nil end
+    end
+
+    FlyToggle.MouseButton1Click:Connect(function()
+        if Flying then
+            StopFlying()
+            FlyToggle.Text = "Fly OFF"
+        else
+            StartFlying()
+            FlyToggle.Text = "Fly ON"
+        end
+    end)
+
+    PlusBtn.MouseButton1Click:Connect(function()
+        FlySpeed = FlySpeed + 10
+        SpeedLabel.Text = tostring(FlySpeed)
+    end)
+    MinusBtn.MouseButton1Click:Connect(function()
+        FlySpeed = math.max(10, FlySpeed - 10)
+        SpeedLabel.Text = tostring(FlySpeed)
+    end)
+
+    -- FLY MOVEMENT
+    RunService.Heartbeat:Connect(function()
+        if Flying and BodyVelocity and BodyGyro then
+            local MoveVector = Vector3.new(
+                (UserInputService:IsKeyDown(Enum.KeyCode.D) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.A) and 1 or 0),
+                0,
+                (UserInputService:IsKeyDown(Enum.KeyCode.S) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.W) and 1 or 0)
+            )
+            if MoveVector.Magnitude > 0 then
+                BodyVelocity.Velocity = workspace.CurrentCamera.CFrame:VectorToWorldSpace(MoveVector.Unit * FlySpeed)
+            else
+                BodyVelocity.Velocity = Vector3.new()
+            end
+            BodyGyro.CFrame = workspace.CurrentCamera.CFrame
+        end
+    end)
+
+    -- NOCLIP
+    NoclipToggle.MouseButton1Click:Connect(function()
+        Noclipping = not Noclipping
+        NoclipToggle.Text = Noclipping and "Noclip ON" or "Noclip OFF"
+    end)
+
+    RunService.Stepped:Connect(function()
+        if Noclipping then
+            for _, part in ipairs(Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+            Humanoid.WalkSpeed = 16
+            Humanoid.JumpPower = 50
+        end
+    end)
+
+    -- MARK LOCATION
+    MarkBtn.MouseButton1Click:Connect(function()
+        MarkedPosition = RootPart.Position
+    end)
+
+    -- INSTANT STEAL (RAGDOLL DRAG)
+    StealBtn.MouseButton1Click:Connect(function()
+        if not MarkedPosition then return end
+        Humanoid.PlatformStand = true
+        local partsToMove = {}
+        for _, part in ipairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                table.insert(partsToMove, part)
+            end
+        end
+        local tool = Character:FindFirstChildOfClass("Tool")
+        if tool then
+            for _, part in ipairs(tool:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    table.insert(partsToMove, part)
+                end
+            end
+        end
+
+        local conn
+        conn = RunService.Heartbeat:Connect(function()
+            local direction = MarkedPosition - RootPart.Position
+            local distance = direction.Magnitude
+            if distance < 1 then
+                conn:Disconnect()
+                Humanoid.PlatformStand = false
+                for _, part in ipairs(partsToMove) do
+                    part.Velocity = Vector3.new()
+                end
+                RootPart.CFrame = CFrame.new(MarkedPosition)
+            else
+                local dragSpeed = math.clamp(distance * 1.2, 2, 10)
+                local velocity = direction.Unit * dragSpeed
+                for _, part in ipairs(partsToMove) do
+                    part.Velocity = velocity
+                end
+            end
+        end)
+    end)
+end
+
+--// KEY SUBMIT
+SubmitBtn.MouseButton1Click:Connect(function()
+    if KeyBox.Text == CorrectKey then
+        KeyGui:Destroy()
+        CreateMainGUI()
+    else
+        InfoLabel.Text = "Wrong Key! Try Again"
+    end
+end)
