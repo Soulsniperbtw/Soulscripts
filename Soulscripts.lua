@@ -15,7 +15,7 @@ local FlySpeed = 50
 local BodyGyro, BodyVelocity
 
 --// KEY SYSTEM
-local Key = "1234" -- change this to your desired key
+local Key = "1234" -- change to your desired key
 
 local function PromptKey(callback)
     local keyGui = Instance.new("ScreenGui")
@@ -39,15 +39,15 @@ local function PromptKey(callback)
     title.TextSize = 20
     title.Parent = frame
 
-    local input = Instance.new("TextBox")
-    input.Size = UDim2.new(0,150,0,30)
-    input.Position = UDim2.new(0.5,-75,0,35)
-    input.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    input.TextColor3 = Color3.fromRGB(255,255,255)
-    input.PlaceholderText = "Enter key..."
-    input.Font = Enum.Font.Gotham
-    input.TextSize = 16
-    input.Parent = frame
+    local instruction = Instance.new("TextLabel")
+    instruction.Size = UDim2.new(1,0,0,30)
+    instruction.Position = UDim2.new(0,0,0,35)
+    instruction.BackgroundTransparency = 1
+    instruction.Text = "Enter The Key"
+    instruction.TextColor3 = Color3.fromRGB(0,0,139) -- dark blue
+    instruction.Font = Enum.Font.GothamBold
+    instruction.TextSize = 18
+    instruction.Parent = frame
 
     local submit = Instance.new("TextButton")
     submit.Size = UDim2.new(0,80,0,30)
@@ -60,13 +60,9 @@ local function PromptKey(callback)
     submit.Parent = frame
 
     submit.MouseButton1Click:Connect(function()
-        if input.Text == Key then
-            keyGui:Destroy()
-            if callback then
-                callback()
-            end
-        else
-            input.Text = ""
+        keyGui:Destroy()
+        if callback then
+            callback()
         end
     end)
 end
@@ -194,7 +190,7 @@ local function CreateMainGUI()
     NoclipToggle.TextSize = 16
     NoclipToggle.Parent = NoclipRow
 
-    -- INSTANT STEAL (Teleport to spawn)
+    -- INSTANT STEAL (drag to spawn)
     local StealBtn = Instance.new("TextButton")
     StealBtn.Size = UDim2.new(0,120,0,30)
     StealBtn.Position = UDim2.new(0,0,0,5)
@@ -206,9 +202,27 @@ local function CreateMainGUI()
     StealBtn.Parent = StealRow
 
     StealBtn.MouseButton1Click:Connect(function()
-        local spawnPart = workspace:FindFirstChild("Spawn") -- replace with actual spawn/fish name
+        local spawnPart = workspace:FindFirstChild("Spawn") -- replace with actual spawn/fish part name
         if spawnPart then
-            RootPart.CFrame = spawnPart.CFrame + Vector3.new(0,3,0)
+            if Character:FindFirstChild("StealVelocity") then
+                Character.StealVelocity:Destroy()
+            end
+            local bv = Instance.new("BodyVelocity")
+            bv.Name = "StealVelocity"
+            bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+            bv.Velocity = (spawnPart.Position - RootPart.Position).Unit * 50
+            bv.Parent = RootPart
+
+            local connection
+            connection = RunService.Heartbeat:Connect(function()
+                local distance = (RootPart.Position - spawnPart.Position).Magnitude
+                if distance < 3 then
+                    bv:Destroy()
+                    connection:Disconnect()
+                else
+                    bv.Velocity = (spawnPart.Position - RootPart.Position).Unit * 50
+                end
+            end)
         end
     end)
 
