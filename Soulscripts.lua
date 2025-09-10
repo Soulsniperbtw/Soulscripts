@@ -13,9 +13,10 @@ local Flying = false
 local Noclipping = false
 local FlySpeed = 50
 local BodyGyro, BodyVelocity
+local MarkedPosition
 
 --// KEY SYSTEM
-local Key = "1234" -- change to your desired key
+local Key = "1234" -- set your key here
 
 local function PromptKey(callback)
     local keyGui = Instance.new("ScreenGui")
@@ -23,11 +24,15 @@ local function PromptKey(callback)
     keyGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0,250,0,100)
-    frame.Position = UDim2.new(0.5,-125,0.5,-50)
-    frame.BackgroundColor3 = Color3.fromRGB(200,0,0)
+    frame.Size = UDim2.new(0,250,0,140)
+    frame.Position = UDim2.new(0.5,-125,0.5,-70)
+    frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
     frame.BorderSizePixel = 0
     frame.Parent = keyGui
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0,10)
+    UICorner.Parent = frame
 
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1,0,0,25)
@@ -41,17 +46,39 @@ local function PromptKey(callback)
 
     local instruction = Instance.new("TextLabel")
     instruction.Size = UDim2.new(1,0,0,30)
-    instruction.Position = UDim2.new(0,0,0,35)
+    instruction.Position = UDim2.new(0,0,0,30)
     instruction.BackgroundTransparency = 1
     instruction.Text = "Enter The Key"
-    instruction.TextColor3 = Color3.fromRGB(0,0,139) -- dark blue
+    instruction.TextColor3 = Color3.fromRGB(0,0,139)
     instruction.Font = Enum.Font.GothamBold
     instruction.TextSize = 18
     instruction.Parent = frame
 
+    local input = Instance.new("TextBox")
+    input.Size = UDim2.new(0,150,0,30)
+    input.Position = UDim2.new(0.5,-75,0,65)
+    input.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    input.Text = ""
+    input.PlaceholderText = "Type key here"
+    input.ClearTextOnFocus = false
+    input.TextColor3 = Color3.fromRGB(0,0,0)
+    input.Font = Enum.Font.Gotham
+    input.TextSize = 16
+    input.Parent = frame
+
+    local feedback = Instance.new("TextLabel")
+    feedback.Size = UDim2.new(1,0,0,20)
+    feedback.Position = UDim2.new(0,0,0,100)
+    feedback.BackgroundTransparency = 1
+    feedback.Text = ""
+    feedback.TextColor3 = Color3.fromRGB(255,255,255)
+    feedback.Font = Enum.Font.GothamBold
+    feedback.TextSize = 16
+    feedback.Parent = frame
+
     local submit = Instance.new("TextButton")
     submit.Size = UDim2.new(0,80,0,30)
-    submit.Position = UDim2.new(0.5,-40,0,70)
+    submit.Position = UDim2.new(0.5,-40,0,115)
     submit.BackgroundColor3 = Color3.fromRGB(0,170,255)
     submit.Text = "Submit"
     submit.TextColor3 = Color3.fromRGB(0,0,0)
@@ -59,10 +86,28 @@ local function PromptKey(callback)
     submit.TextSize = 16
     submit.Parent = frame
 
+    local function addNeonEffect(button, mainColor, gradientColor)
+        -- Add outline glow
+        local stroke = Instance.new("UIStroke")
+        stroke.Parent = button
+        stroke.Thickness = 2
+        stroke.Color = mainColor
+        stroke.Transparency = 0.3
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+        -- Add gradient
+        local gradient = Instance.new("UIGradient")
+        gradient.Parent = button
+        gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, mainColor), ColorSequenceKeypoint.new(1, gradientColor)})
+        gradient.Rotation = 45
+    end
+
     submit.MouseButton1Click:Connect(function()
-        keyGui:Destroy()
-        if callback then
-            callback()
+        if input.Text == Key then
+            keyGui:Destroy()
+            if callback then callback() end
+        else
+            feedback.Text = "Wrong key! Try again."
         end
     end)
 end
@@ -75,7 +120,7 @@ local function CreateMainGUI()
     ScreenGui.ResetOnSpawn = false
 
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0,300,0,180)
+    MainFrame.Size = UDim2.new(0,320,0,220)
     MainFrame.Position = UDim2.new(0.35,0,0.35,0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
     MainFrame.BorderSizePixel = 0
@@ -124,7 +169,6 @@ local function CreateMainGUI()
         MainFrame.Visible = not MainFrame.Visible
     end)
 
-    -- ROW CREATOR
     local function createRow(y)
         local row = Instance.new("Frame")
         row.Size = UDim2.new(1,-20,0,40)
@@ -190,10 +234,24 @@ local function CreateMainGUI()
     NoclipToggle.TextSize = 16
     NoclipToggle.Parent = NoclipRow
 
-    -- INSTANT STEAL (drag to spawn)
+    -- MARK LOCATION
+    local MarkBtn = Instance.new("TextButton")
+    MarkBtn.Size = UDim2.new(0,120,0,30)
+    MarkBtn.Position = UDim2.new(0,0,0,5)
+    MarkBtn.BackgroundColor3 = Color3.fromRGB(0,255,0)
+    MarkBtn.Text = "Mark Location"
+    MarkBtn.TextColor3 = Color3.fromRGB(0,0,0)
+    MarkBtn.Font = Enum.Font.GothamBold
+    MarkBtn.TextSize = 16
+    MarkBtn.Parent = StealRow
+    MarkBtn.MouseButton1Click:Connect(function()
+        MarkedPosition = RootPart.Position
+    end)
+
+    -- INSTANT STEAL WITH ACCELERATION
     local StealBtn = Instance.new("TextButton")
     StealBtn.Size = UDim2.new(0,120,0,30)
-    StealBtn.Position = UDim2.new(0,0,0,5)
+    StealBtn.Position = UDim2.new(0,140,0,5)
     StealBtn.BackgroundColor3 = Color3.fromRGB(255,0,255)
     StealBtn.Text = "Instant Steal"
     StealBtn.TextColor3 = Color3.fromRGB(0,0,0)
@@ -201,29 +259,49 @@ local function CreateMainGUI()
     StealBtn.TextSize = 16
     StealBtn.Parent = StealRow
 
-    StealBtn.MouseButton1Click:Connect(function()
-        local spawnPart = workspace:FindFirstChild("Spawn") -- replace with actual spawn/fish part name
-        if spawnPart then
-            if Character:FindFirstChild("StealVelocity") then
-                Character.StealVelocity:Destroy()
-            end
-            local bv = Instance.new("BodyVelocity")
-            bv.Name = "StealVelocity"
-            bv.MaxForce = Vector3.new(1e5,1e5,1e5)
-            bv.Velocity = (spawnPart.Position - RootPart.Position).Unit * 50
-            bv.Parent = RootPart
+    local function addNeon(button, mainC, gradC)
+        local stroke = Instance.new("UIStroke")
+        stroke.Parent = button
+        stroke.Thickness = 2
+        stroke.Color = mainC
+        stroke.Transparency = 0.2
+        local gradient = Instance.new("UIGradient")
+        gradient.Parent = button
+        gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, mainC), ColorSequenceKeypoint.new(1, gradC)})
+        gradient.Rotation = 45
+    end
 
-            local connection
-            connection = RunService.Heartbeat:Connect(function()
-                local distance = (RootPart.Position - spawnPart.Position).Magnitude
-                if distance < 3 then
-                    bv:Destroy()
-                    connection:Disconnect()
-                else
-                    bv.Velocity = (spawnPart.Position - RootPart.Position).Unit * 50
-                end
-            end)
+    addNeon(FlyToggle, Color3.fromRGB(0,255,255), Color3.fromRGB(0,150,255))
+    addNeon(NoclipToggle, Color3.fromRGB(255,215,0), Color3.fromRGB(255,165,0))
+    addNeon(MarkBtn, Color3.fromRGB(0,255,0), Color3.fromRGB(0,150,0))
+    addNeon(StealBtn, Color3.fromRGB(255,0,255), Color3.fromRGB(150,0,150))
+    addNeon(PlusBtn, Color3.fromRGB(0,255,255), Color3.fromRGB(0,150,255))
+    addNeon(MinusBtn, Color3.fromRGB(255,150,0), Color3.fromRGB(200,50,50))
+
+    StealBtn.MouseButton1Click:Connect(function()
+        if not MarkedPosition then return end
+        if Character:FindFirstChild("StealVelocity") then
+            Character.StealVelocity:Destroy()
         end
+
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = "StealVelocity"
+        bv.MaxForce = Vector3.new(1e6,1e6,1e6)
+        bv.Velocity = Vector3.new()
+        bv.Parent = RootPart
+
+        local connection
+        connection = RunService.Heartbeat:Connect(function()
+            local direction = (MarkedPosition - RootPart.Position)
+            local distance = direction.Magnitude
+            if distance < 1 then
+                bv:Destroy()
+                connection:Disconnect()
+            else
+                local speed = math.clamp(distance * 10, 20, 150)
+                bv.Velocity = direction.Unit * speed
+            end
+        end)
     end)
 
     -- FLY LOGIC
