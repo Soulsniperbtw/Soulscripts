@@ -4,9 +4,6 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
-local RootPart = Character:WaitForChild("HumanoidRootPart")
 
 --// VARIABLES
 local Flying = false
@@ -15,6 +12,19 @@ local FlySpeed = 50
 local StealSpeedMultiplier = 1.2
 local BodyGyro, BodyVelocity
 local MarkedPosition
+
+local Character
+local Humanoid
+local RootPart
+
+--// UPDATE CHARACTER ON RESPAWN
+local function UpdateCharacter()
+    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    Humanoid = Character:WaitForChild("Humanoid")
+    RootPart = Character:WaitForChild("HumanoidRootPart")
+end
+UpdateCharacter()
+LocalPlayer.CharacterAdded:Connect(UpdateCharacter)
 
 --// KEY SYSTEM
 local CorrectKey = "SOULS"
@@ -117,10 +127,7 @@ local function CreateMainGUI()
     CloseBtn.Font = Enum.Font.GothamBold
     CloseBtn.TextSize = 20
     CloseBtn.Parent = MainFrame
-
-    CloseBtn.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-    end)
+    CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
     -- CONTAINERS
     local FlyFrame = Instance.new("Frame")
@@ -141,7 +148,7 @@ local function CreateMainGUI()
     StealFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
     StealFrame.Parent = MainFrame
 
-    -- FLY BUTTONS
+    -- FLY
     local FlyToggle = Instance.new("TextButton")
     FlyToggle.Size = UDim2.new(0,80,0,40)
     FlyToggle.Position = UDim2.new(0,10,0,10)
@@ -176,7 +183,7 @@ local function CreateMainGUI()
     SpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
     SpeedLabel.Parent = FlyFrame
 
-    -- NOCLIP BUTTON
+    -- NOCLIP
     local NoclipToggle = Instance.new("TextButton")
     NoclipToggle.Size = UDim2.new(0,120,0,40)
     NoclipToggle.Position = UDim2.new(0,10,0,10)
@@ -208,7 +215,6 @@ local function CreateMainGUI()
     StealBtn.TextSize = 18
     StealBtn.Parent = StealFrame
 
-    -- STEAL SPEED CUSTOMIZER
     local StealSpeedLabel = Instance.new("TextLabel")
     StealSpeedLabel.Size = UDim2.new(0,50,0,30)
     StealSpeedLabel.Position = UDim2.new(0,290,0,15)
@@ -232,124 +238,3 @@ local function CreateMainGUI()
     MinusSpeedBtn.Text = "-"
     MinusSpeedBtn.TextColor3 = Color3.fromRGB(0,0,0)
     MinusSpeedBtn.Parent = StealFrame
-
-    -- BUTTON FUNCTIONS
-    PlusSpeedBtn.MouseButton1Click:Connect(function()
-        StealSpeedMultiplier = StealSpeedMultiplier + 0.1
-        StealSpeedLabel.Text = string.format("%.1f", StealSpeedMultiplier)
-    end)
-
-    MinusSpeedBtn.MouseButton1Click:Connect(function()
-        StealSpeedMultiplier = math.max(0.1, StealSpeedMultiplier - 0.1)
-        StealSpeedLabel.Text = string.format("%.1f", StealSpeedMultiplier)
-    end)
-
-    --// FLY FUNCTIONS
-    local function StartFlying()
-        if Flying then return end
-        Flying = true
-        BodyGyro = Instance.new("BodyGyro")
-        BodyGyro.MaxTorque = Vector3.new(1e6,1e6,1e6)
-        BodyGyro.CFrame = RootPart.CFrame
-        BodyGyro.P = 9e4
-        BodyGyro.Parent = RootPart
-
-        BodyVelocity = Instance.new("BodyVelocity")
-        BodyVelocity.MaxForce = Vector3.new(1e6,1e6,1e6)
-        BodyVelocity.Velocity = Vector3.new()
-        BodyVelocity.Parent = RootPart
-    end
-
-    local function StopFlying()
-        Flying = false
-        if BodyGyro then BodyGyro:Destroy() BodyGyro=nil end
-        if BodyVelocity then BodyVelocity:Destroy() BodyVelocity=nil end
-    end
-
-    FlyToggle.MouseButton1Click:Connect(function()
-        if Flying then
-            StopFlying()
-            FlyToggle.Text = "Fly OFF"
-        else
-            StartFlying()
-            FlyToggle.Text = "Fly ON"
-        end
-    end)
-
-    PlusBtn.MouseButton1Click:Connect(function()
-        FlySpeed = FlySpeed + 10
-        SpeedLabel.Text = tostring(FlySpeed)
-    end)
-    MinusBtn.MouseButton1Click:Connect(function()
-        FlySpeed = math.max(10, FlySpeed - 10)
-        SpeedLabel.Text = tostring(FlySpeed)
-    end)
-
-    -- FLY MOVEMENT
-    RunService.Heartbeat:Connect(function()
-        if Flying and BodyVelocity and BodyGyro then
-            local MoveVector = Vector3.new(
-                (UserInputService:IsKeyDown(Enum.KeyCode.D) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.A) and 1 or 0),
-                0,
-                (UserInputService:IsKeyDown(Enum.KeyCode.S) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.W) and 1 or 0)
-            )
-            if MoveVector.Magnitude > 0 then
-                BodyVelocity.Velocity = workspace.CurrentCamera.CFrame:VectorToWorldSpace(MoveVector.Unit * FlySpeed)
-            else
-                BodyVelocity.Velocity = Vector3.new()
-            end
-            BodyGyro.CFrame = workspace.CurrentCamera.CFrame
-        end
-    end)
-
-    -- NOCLIP
-    NoclipToggle.MouseButton1Click:Connect(function()
-        Noclipping = not Noclipping
-        NoclipToggle.Text = Noclipping and "Noclip ON" or "Noclip OFF"
-    end)
-
-    RunService.Stepped:Connect(function()
-        if Noclipping then
-            for _, part in ipairs(Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-            Humanoid.WalkSpeed = 16
-            Humanoid.JumpPower = 50
-        end
-    end)
-
-    -- MARK LOCATION
-    MarkBtn.MouseButton1Click:Connect(function()
-        MarkedPosition = RootPart.Position
-    end)
-
-    -- INSTANT STEAL (RAGDOLL DRAG)
-    StealBtn.MouseButton1Click:Connect(function()
-        if not MarkedPosition then return end
-        Humanoid.PlatformStand = true
-        local parts = {RootPart}
-        local targetPos = MarkedPosition
-        spawn(function()
-            while (RootPart.Position - targetPos).Magnitude > 1 do
-                local dir = (targetPos - RootPart.Position).Unit
-                RootPart.Velocity = dir * math.clamp((targetPos - RootPart.Position).Magnitude * StealSpeedMultiplier, 2, 20)
-                RootPart.CFrame = CFrame.new(RootPart.Position, targetPos) * CFrame.Angles(math.rad(-90),0,0) -- tilt like lying down
-                RunService.Heartbeat:Wait()
-            end
-            RootPart.Velocity = Vector3.new()
-            Humanoid.PlatformStand = false
-        end)
-    end)
-end
-
---// KEY SUBMISSION
-SubmitBtn.MouseButton1Click:Connect(function()
-    if KeyBox.Text == CorrectKey then
-        KeyGui:Destroy()
-        CreateMainGUI()
-    else
-        InfoLabel.Text = "Wrong Key! Try Again."
-    end
-end)
