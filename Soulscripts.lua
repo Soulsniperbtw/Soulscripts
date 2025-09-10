@@ -240,6 +240,70 @@ local function CreateMainGUI()
     MinusSpeedBtn.Parent = StealFrame
 
     --// BUTTON FUNCTIONS
+    FlyToggle.MouseButton1Click:Connect(function()
+        Flying = not Flying
+        FlyToggle.Text = Flying and "Fly ON" or "Fly OFF"
+
+        if Flying then
+            BodyGyro = Instance.new("BodyGyro")
+            BodyGyro.P = 9e4
+            BodyGyro.Parent = RootPart
+
+            BodyVelocity = Instance.new("BodyVelocity")
+            BodyVelocity.Velocity = Vector3.zero
+            BodyVelocity.MaxForce = Vector3.new(9e9,9e9,9e9)
+            BodyVelocity.Parent = RootPart
+
+            RunService.RenderStepped:Connect(function()
+                if Flying and RootPart then
+                    local moveDirection = Vector3.zero
+                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                        moveDirection = moveDirection + (workspace.CurrentCamera.CFrame.LookVector)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                        moveDirection = moveDirection - (workspace.CurrentCamera.CFrame.LookVector)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                        moveDirection = moveDirection - (workspace.CurrentCamera.CFrame.RightVector)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                        moveDirection = moveDirection + (workspace.CurrentCamera.CFrame.RightVector)
+                    end
+                    BodyVelocity.Velocity = moveDirection * FlySpeed
+                    BodyGyro.CFrame = workspace.CurrentCamera.CFrame
+                end
+            end)
+        else
+            if BodyGyro then BodyGyro:Destroy() end
+            if BodyVelocity then BodyVelocity:Destroy() end
+        end
+    end)
+
+    PlusBtn.MouseButton1Click:Connect(function()
+        FlySpeed = FlySpeed + 5
+        SpeedLabel.Text = tostring(FlySpeed)
+    end)
+
+    MinusBtn.MouseButton1Click:Connect(function()
+        FlySpeed = math.max(5, FlySpeed - 5)
+        SpeedLabel.Text = tostring(FlySpeed)
+    end)
+
+    NoclipToggle.MouseButton1Click:Connect(function()
+        Noclipping = not Noclipping
+        NoclipToggle.Text = Noclipping and "Noclip ON" or "Noclip OFF"
+
+        RunService.Stepped:Connect(function()
+            if Noclipping and Character then
+                for _, part in pairs(Character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end)
+
     MarkBtn.MouseButton1Click:Connect(function()
         if RootPart then
             MarkedPosition = RootPart.Position
@@ -248,12 +312,18 @@ local function CreateMainGUI()
 
     StealBtn.MouseButton1Click:Connect(function()
         if MarkedPosition and RootPart then
-            -- Move character slightly back + up
+            -- Smooth drag back + up
             local backward = -RootPart.CFrame.LookVector * (10 * StealSpeedMultiplier)
             local upward = Vector3.new(0, 5 * StealSpeedMultiplier, 0)
             local targetPos = MarkedPosition + backward + upward
 
-            RootPart.CFrame = CFrame.new(targetPos)
+            local steps = 20
+            local startPos = RootPart.Position
+            for i = 1, steps do
+                local alpha = i / steps
+                RootPart.CFrame = CFrame.new(startPos:Lerp(targetPos, alpha))
+                RunService.RenderStepped:Wait()
+            end
         end
     end)
 
