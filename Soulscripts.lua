@@ -12,6 +12,7 @@ local RootPart = Character:WaitForChild("HumanoidRootPart")
 local Flying = false
 local Noclipping = false
 local FlySpeed = 50
+local StealSpeedMultiplier = 1.2
 local BodyGyro, BodyVelocity
 local MarkedPosition
 
@@ -84,7 +85,7 @@ local function CreateMainGUI()
     ScreenGui.ResetOnSpawn = false
 
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 350, 0, 250)
+    MainFrame.Size = UDim2.new(0, 450, 0, 300)
     MainFrame.Position = UDim2.new(0.3,0,0.3,0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
     MainFrame.BorderSizePixel = 0
@@ -207,6 +208,42 @@ local function CreateMainGUI()
     StealBtn.TextSize = 18
     StealBtn.Parent = StealFrame
 
+    -- STEAL SPEED CUSTOMIZER
+    local StealSpeedLabel = Instance.new("TextLabel")
+    StealSpeedLabel.Size = UDim2.new(0,50,0,30)
+    StealSpeedLabel.Position = UDim2.new(0,290,0,15)
+    StealSpeedLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    StealSpeedLabel.Text = tostring(StealSpeedMultiplier)
+    StealSpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    StealSpeedLabel.Parent = StealFrame
+
+    local PlusSpeedBtn = Instance.new("TextButton")
+    PlusSpeedBtn.Size = UDim2.new(0,30,0,30)
+    PlusSpeedBtn.Position = UDim2.new(0,350,0,15)
+    PlusSpeedBtn.BackgroundColor3 = Color3.fromRGB(0,255,255)
+    PlusSpeedBtn.Text = "+"
+    PlusSpeedBtn.TextColor3 = Color3.fromRGB(0,0,0)
+    PlusSpeedBtn.Parent = StealFrame
+
+    local MinusSpeedBtn = Instance.new("TextButton")
+    MinusSpeedBtn.Size = UDim2.new(0,30,0,30)
+    MinusSpeedBtn.Position = UDim2.new(0,390,0,15)
+    MinusSpeedBtn.BackgroundColor3 = Color3.fromRGB(255,100,100)
+    MinusSpeedBtn.Text = "-"
+    MinusSpeedBtn.TextColor3 = Color3.fromRGB(0,0,0)
+    MinusSpeedBtn.Parent = StealFrame
+
+    -- BUTTON FUNCTIONS
+    PlusSpeedBtn.MouseButton1Click:Connect(function()
+        StealSpeedMultiplier = StealSpeedMultiplier + 0.1
+        StealSpeedLabel.Text = string.format("%.1f", StealSpeedMultiplier)
+    end)
+
+    MinusSpeedBtn.MouseButton1Click:Connect(function()
+        StealSpeedMultiplier = math.max(0.1, StealSpeedMultiplier - 0.1)
+        StealSpeedLabel.Text = string.format("%.1f", StealSpeedMultiplier)
+    end)
+
     --// FLY FUNCTIONS
     local function StartFlying()
         if Flying then return end
@@ -292,49 +329,27 @@ local function CreateMainGUI()
     StealBtn.MouseButton1Click:Connect(function()
         if not MarkedPosition then return end
         Humanoid.PlatformStand = true
-        local partsToMove = {}
-        for _, part in ipairs(Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                table.insert(partsToMove, part)
+        local parts = {RootPart}
+        local targetPos = MarkedPosition
+        spawn(function()
+            while (RootPart.Position - targetPos).Magnitude > 1 do
+                local dir = (targetPos - RootPart.Position).Unit
+                RootPart.Velocity = dir * math.clamp((targetPos - RootPart.Position).Magnitude * StealSpeedMultiplier, 2, 20)
+                RootPart.CFrame = CFrame.new(RootPart.Position, targetPos) * CFrame.Angles(math.rad(-90),0,0) -- tilt like lying down
+                RunService.Heartbeat:Wait()
             end
-        end
-        local tool = Character:FindFirstChildOfClass("Tool")
-        if tool then
-            for _, part in ipairs(tool:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    table.insert(partsToMove, part)
-                end
-            end
-        end
-
-        local conn
-        conn = RunService.Heartbeat:Connect(function()
-            local direction = MarkedPosition - RootPart.Position
-            local distance = direction.Magnitude
-            if distance < 1 then
-                conn:Disconnect()
-                Humanoid.PlatformStand = false
-                for _, part in ipairs(partsToMove) do
-                    part.Velocity = Vector3.new()
-                end
-                RootPart.CFrame = CFrame.new(MarkedPosition)
-            else
-                local dragSpeed = math.clamp(distance * 1.2, 2, 10)
-                local velocity = direction.Unit * dragSpeed
-                for _, part in ipairs(partsToMove) do
-                    part.Velocity = velocity
-                end
-            end
+            RootPart.Velocity = Vector3.new()
+            Humanoid.PlatformStand = false
         end)
     end)
 end
 
---// KEY SUBMIT
+--// KEY SUBMISSION
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyBox.Text == CorrectKey then
         KeyGui:Destroy()
         CreateMainGUI()
     else
-        InfoLabel.Text = "Wrong Key! Try Again"
+        InfoLabel.Text = "Wrong Key! Try Again."
     end
 end)
