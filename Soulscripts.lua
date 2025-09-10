@@ -2,7 +2,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -64,7 +63,7 @@ KeyBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
 KeyBox.TextColor3 = Color3.fromRGB(255,255,255)
 KeyBox.Font = Enum.Font.Gotham
 KeyBox.TextSize = 20
-KeyBox.ClearTextOnFocus = true
+KeyBox.ClearTextOnFocus = false
 KeyBox.PlaceholderText = "Enter Key Here"
 KeyBox.Parent = KeyFrame
 
@@ -88,16 +87,16 @@ InfoLabel.Font = Enum.Font.GothamBold
 InfoLabel.TextSize = 16
 InfoLabel.Parent = KeyFrame
 
---// FUNCTION TO CREATE MAIN GUI
+--// MAIN GUI FUNCTION
 local function CreateMainGUI()
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "SoulsMainGui"
+    ScreenGui.Name = "FlyNoclipGui"
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
     ScreenGui.ResetOnSpawn = false
 
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 500, 0, 500)
-    MainFrame.Position = UDim2.new(0.25,0,0.25,0)
+    MainFrame.Size = UDim2.new(0, 450, 0, 300)
+    MainFrame.Position = UDim2.new(0.3,0,0.3,0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
@@ -108,12 +107,14 @@ local function CreateMainGUI()
     UICorner.CornerRadius = UDim.new(0,12)
     UICorner.Parent = MainFrame
 
+    -- TITLE
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1,0,0,40)
+    Title.Position = UDim2.new(0,0,0,0)
     Title.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    Title.Text = "Souls Hub"
+    Title.Text = "Fly & Noclip GUI"
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 22
+    Title.TextSize = 20
     Title.TextColor3 = Color3.fromRGB(255,255,255)
     Title.Parent = MainFrame
 
@@ -128,13 +129,26 @@ local function CreateMainGUI()
     CloseBtn.Parent = MainFrame
     CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-    --// FLY SECTION
+    -- CONTAINERS
     local FlyFrame = Instance.new("Frame")
     FlyFrame.Size = UDim2.new(1,-20,0,60)
     FlyFrame.Position = UDim2.new(0,10,0,50)
     FlyFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
     FlyFrame.Parent = MainFrame
 
+    local NoclipFrame = Instance.new("Frame")
+    NoclipFrame.Size = UDim2.new(1,-20,0,60)
+    NoclipFrame.Position = UDim2.new(0,10,0,120)
+    NoclipFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    NoclipFrame.Parent = MainFrame
+
+    local StealFrame = Instance.new("Frame")
+    StealFrame.Size = UDim2.new(1,-20,0,60)
+    StealFrame.Position = UDim2.new(0,10,0,190)
+    StealFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    StealFrame.Parent = MainFrame
+
+    -- FLY
     local FlyToggle = Instance.new("TextButton")
     FlyToggle.Size = UDim2.new(0,80,0,40)
     FlyToggle.Position = UDim2.new(0,10,0,10)
@@ -145,17 +159,9 @@ local function CreateMainGUI()
     FlyToggle.TextSize = 18
     FlyToggle.Parent = FlyFrame
 
-    local FlySpeedLabel = Instance.new("TextLabel")
-    FlySpeedLabel.Size = UDim2.new(0,50,0,30)
-    FlySpeedLabel.Position = UDim2.new(0,100,0,15)
-    FlySpeedLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    FlySpeedLabel.Text = tostring(FlySpeed)
-    FlySpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
-    FlySpeedLabel.Parent = FlyFrame
-
     local PlusBtn = Instance.new("TextButton")
     PlusBtn.Size = UDim2.new(0,30,0,30)
-    PlusBtn.Position = UDim2.new(0,160,0,15)
+    PlusBtn.Position = UDim2.new(0,100,0,10)
     PlusBtn.BackgroundColor3 = Color3.fromRGB(0,255,255)
     PlusBtn.Text = "+"
     PlusBtn.TextColor3 = Color3.fromRGB(0,0,0)
@@ -163,19 +169,21 @@ local function CreateMainGUI()
 
     local MinusBtn = Instance.new("TextButton")
     MinusBtn.Size = UDim2.new(0,30,0,30)
-    MinusBtn.Position = UDim2.new(0,200,0,15)
+    MinusBtn.Position = UDim2.new(0,140,0,10)
     MinusBtn.BackgroundColor3 = Color3.fromRGB(255,100,100)
     MinusBtn.Text = "-"
     MinusBtn.TextColor3 = Color3.fromRGB(0,0,0)
     MinusBtn.Parent = FlyFrame
 
-    --// NOCLIP SECTION
-    local NoclipFrame = Instance.new("Frame")
-    NoclipFrame.Size = UDim2.new(1,-20,0,60)
-    NoclipFrame.Position = UDim2.new(0,10,0,120)
-    NoclipFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    NoclipFrame.Parent = MainFrame
+    local SpeedLabel = Instance.new("TextLabel")
+    SpeedLabel.Size = UDim2.new(0,50,0,30)
+    SpeedLabel.Position = UDim2.new(0,180,0,10)
+    SpeedLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    SpeedLabel.Text = tostring(FlySpeed)
+    SpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    SpeedLabel.Parent = FlyFrame
 
+    -- NOCLIP
     local NoclipToggle = Instance.new("TextButton")
     NoclipToggle.Size = UDim2.new(0,120,0,40)
     NoclipToggle.Position = UDim2.new(0,10,0,10)
@@ -186,13 +194,7 @@ local function CreateMainGUI()
     NoclipToggle.TextSize = 18
     NoclipToggle.Parent = NoclipFrame
 
-    --// INSTANT STEAL SECTION
-    local StealFrame = Instance.new("Frame")
-    StealFrame.Size = UDim2.new(1,-20,0,60)
-    StealFrame.Position = UDim2.new(0,10,0,190)
-    StealFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    StealFrame.Parent = MainFrame
-
+    -- STEAL BUTTONS
     local MarkBtn = Instance.new("TextButton")
     MarkBtn.Size = UDim2.new(0,120,0,40)
     MarkBtn.Position = UDim2.new(0,10,0,10)
@@ -213,114 +215,135 @@ local function CreateMainGUI()
     StealBtn.TextSize = 18
     StealBtn.Parent = StealFrame
 
-    -- ADDITIONAL FEATURES PLACEHOLDER (ESP, SpeedHack, JumpBoost, etc.)
-    -- You can expand here to reach ~440 lines
+    local StealSpeedLabel = Instance.new("TextLabel")
+    StealSpeedLabel.Size = UDim2.new(0,50,0,30)
+    StealSpeedLabel.Position = UDim2.new(0,290,0,15)
+    StealSpeedLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    StealSpeedLabel.Text = tostring(StealSpeedMultiplier)
+    StealSpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    StealSpeedLabel.Parent = StealFrame
+
+    local PlusSpeedBtn = Instance.new("TextButton")
+    PlusSpeedBtn.Size = UDim2.new(0,30,0,30)
+    PlusSpeedBtn.Position = UDim2.new(0,350,0,15)
+    PlusSpeedBtn.BackgroundColor3 = Color3.fromRGB(0,255,255)
+    PlusSpeedBtn.Text = "+"
+    PlusSpeedBtn.TextColor3 = Color3.fromRGB(0,0,0)
+    PlusSpeedBtn.Parent = StealFrame
+
+    local MinusSpeedBtn = Instance.new("TextButton")
+    MinusSpeedBtn.Size = UDim2.new(0,30,0,30)
+    MinusSpeedBtn.Position = UDim2.new(0,390,0,15)
+    MinusSpeedBtn.BackgroundColor3 = Color3.fromRGB(255,100,100)
+    MinusSpeedBtn.Text = "-"
+    MinusSpeedBtn.TextColor3 = Color3.fromRGB(0,0,0)
+    MinusSpeedBtn.Parent = StealFrame
+
+    --// BUTTON FUNCTIONS
+    FlyToggle.MouseButton1Click:Connect(function()
+        Flying = not Flying
+        FlyToggle.Text = Flying and "Fly ON" or "Fly OFF"
+
+        if Flying then
+            BodyGyro = Instance.new("BodyGyro")
+            BodyGyro.P = 9e4
+            BodyGyro.Parent = RootPart
+
+            BodyVelocity = Instance.new("BodyVelocity")
+            BodyVelocity.Velocity = Vector3.zero
+            BodyVelocity.MaxForce = Vector3.new(9e9,9e9,9e9)
+            BodyVelocity.Parent = RootPart
+
+            RunService.RenderStepped:Connect(function()
+                if Flying and RootPart then
+                    local moveDirection = Vector3.zero
+                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                        moveDirection = moveDirection + (workspace.CurrentCamera.CFrame.LookVector)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                        moveDirection = moveDirection - (workspace.CurrentCamera.CFrame.LookVector)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                        moveDirection = moveDirection - (workspace.CurrentCamera.CFrame.RightVector)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                        moveDirection = moveDirection + (workspace.CurrentCamera.CFrame.RightVector)
+                    end
+                    BodyVelocity.Velocity = moveDirection * FlySpeed
+                    BodyGyro.CFrame = workspace.CurrentCamera.CFrame
+                end
+            end)
+        else
+            if BodyGyro then BodyGyro:Destroy() end
+            if BodyVelocity then BodyVelocity:Destroy() end
+        end
+    end)
+
+    PlusBtn.MouseButton1Click:Connect(function()
+        FlySpeed = FlySpeed + 5
+        SpeedLabel.Text = tostring(FlySpeed)
+    end)
+
+    MinusBtn.MouseButton1Click:Connect(function()
+        FlySpeed = math.max(5, FlySpeed - 5)
+        SpeedLabel.Text = tostring(FlySpeed)
+    end)
+
+    NoclipToggle.MouseButton1Click:Connect(function()
+        Noclipping = not Noclipping
+        NoclipToggle.Text = Noclipping and "Noclip ON" or "Noclip OFF"
+
+        RunService.Stepped:Connect(function()
+            if Noclipping and Character then
+                for _, part in pairs(Character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end)
+
+    MarkBtn.MouseButton1Click:Connect(function()
+        if RootPart then
+            MarkedPosition = RootPart.Position
+        end
+    end)
+
+    StealBtn.MouseButton1Click:Connect(function()
+        if MarkedPosition and RootPart then
+            -- Smooth drag back + up
+            local backward = -RootPart.CFrame.LookVector * (10 * StealSpeedMultiplier)
+            local upward = Vector3.new(0, 5 * StealSpeedMultiplier, 0)
+            local targetPos = MarkedPosition + backward + upward
+
+            local steps = 20
+            local startPos = RootPart.Position
+            for i = 1, steps do
+                local alpha = i / steps
+                RootPart.CFrame = CFrame.new(startPos:Lerp(targetPos, alpha))
+                RunService.RenderStepped:Wait()
+            end
+        end
+    end)
+
+    PlusSpeedBtn.MouseButton1Click:Connect(function()
+        StealSpeedMultiplier = StealSpeedMultiplier + 0.1
+        StealSpeedLabel.Text = string.format("%.1f", StealSpeedMultiplier)
+    end)
+
+    MinusSpeedBtn.MouseButton1Click:Connect(function()
+        StealSpeedMultiplier = math.max(0.1, StealSpeedMultiplier - 0.1)
+        StealSpeedLabel.Text = string.format("%.1f", StealSpeedMultiplier)
+    end)
 end
 
---// KEY SYSTEM FUNCTIONALITY
+--// KEY SUBMIT
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyBox.Text == CorrectKey then
         KeyGui:Destroy()
         CreateMainGUI()
-        
-        --// ADDITIONAL FEATURES START
-        local ESPEnabled = false
-        local SpeedHackEnabled = false
-        local JumpBoostEnabled = false
-        local AimBotEnabled = false
-        
-        -- ESP Feature
-        local function ToggleESP()
-            ESPEnabled = not ESPEnabled
-            if ESPEnabled then
-                print("ESP Enabled")
-                -- Code to highlight players, items, etc.
-            else
-                print("ESP Disabled")
-                -- Code to remove highlights
-            end
-        end
-
-        -- Speed Hack Feature
-        local function ToggleSpeedHack()
-            SpeedHackEnabled = not SpeedHackEnabled
-            if SpeedHackEnabled then
-                Humanoid.WalkSpeed = 100 -- Customize speed
-            else
-                Humanoid.WalkSpeed = 16 -- Default speed
-            end
-        end
-
-        -- Jump Boost Feature
-        local function ToggleJumpBoost()
-            JumpBoostEnabled = not JumpBoostEnabled
-            if JumpBoostEnabled then
-                Humanoid.JumpPower = 150
-            else
-                Humanoid.JumpPower = 50
-            end
-        end
-
-        -- AimBot Feature
-        local function ToggleAimBot()
-            AimBotEnabled = not AimBotEnabled
-            if AimBotEnabled then
-                print("AimBot Enabled")
-                -- Code to lock onto nearest target
-            else
-                print("AimBot Disabled")
-                -- Disable AimBot logic
-            end
-        end
-
-        --// Keybinds for toggles
-        UserInputService.InputBegan:Connect(function(input, gameProcessed)
-            if gameProcessed then return end
-            if input.KeyCode == Enum.KeyCode.E then
-                ToggleESP()
-            elseif input.KeyCode == Enum.KeyCode.R then
-                ToggleSpeedHack()
-            elseif input.KeyCode == Enum.KeyCode.T then
-                ToggleJumpBoost()
-            elseif input.KeyCode == Enum.KeyCode.Y then
-                ToggleAimBot()
-            end
-        end)
-
-        --// Instant Steal Drag Functionality
-        local function MoveToMarkedPosition()
-            if MarkedPosition then
-                local startPos = RootPart.Position
-                local distance = (MarkedPosition - startPos).Magnitude
-                local duration = distance / StealSpeedMultiplier
-                local tween = TweenService:Create(RootPart, TweenInfo.new(duration, Enum.EasingStyle.Linear), {CFrame = CFrame.new(MarkedPosition + Vector3.new(0,2,0))})
-                tween:Play()
-            else
-                print("No location marked.")
-            end
-        end
-
-        --// Hook Steal Buttons
-        -- Assuming MarkBtn and StealBtn exist in the main GUI
-        if MainFrame then
-            local MarkBtn = MainFrame:FindFirstChild("MarkBtn")
-            local StealBtn = MainFrame:FindFirstChild("StealBtn")
-
-            if MarkBtn then
-                MarkBtn.MouseButton1Click:Connect(function()
-                    MarkedPosition = RootPart.Position
-                    print("Location Marked")
-                end)
-            end
-
-            if StealBtn then
-                StealBtn.MouseButton1Click:Connect(function()
-                    MoveToMarkedPosition()
-                end)
-            end
-        end
-
     else
-        InfoLabel.Text = "Wrong Key, try again!"
+        InfoLabel.Text = "Incorrect Key!"
     end
 end)
