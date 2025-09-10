@@ -9,7 +9,7 @@ local LocalPlayer = Players.LocalPlayer
 local Flying = false
 local Noclipping = false
 local FlySpeed = 50
-local StealSpeedMultiplier = 1.2
+local StealSpeedMultiplier = 1.0
 local BodyGyro, BodyVelocity
 local MarkedPosition
 
