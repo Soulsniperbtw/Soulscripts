@@ -14,15 +14,74 @@ local Noclipping = false
 local FlySpeed = 50
 local BodyGyro, BodyVelocity
 
+--// KEY SYSTEM
+local Key = "1234" -- Change this to whatever you want
+local InputKey = ""
+
+local function PromptKey()
+    local keyGui = Instance.new("ScreenGui")
+    keyGui.Name = "KeyPrompt"
+    keyGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0,300,0,150)
+    frame.Position = UDim2.new(0.5,-150,0.5,-75)
+    frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    frame.BorderSizePixel = 0
+    frame.Parent = keyGui
+    frame.Active = true
+    frame.Draggable = true
+    
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1,0,0,40)
+    title.Position = UDim2.new(0,0,0,0)
+    title.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    title.Text = "Enter Key"
+    title.TextColor3 = Color3.fromRGB(255,255,255)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 20
+    title.Parent = frame
+    
+    local input = Instance.new("TextBox")
+    input.Size = UDim2.new(0,200,0,40)
+    input.Position = UDim2.new(0.5,-100,0,50)
+    input.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    input.TextColor3 = Color3.fromRGB(255,255,255)
+    input.Font = Enum.Font.Gotham
+    input.TextSize = 18
+    input.PlaceholderText = "Enter key..."
+    input.Parent = frame
+    
+    local submit = Instance.new("TextButton")
+    submit.Size = UDim2.new(0,100,0,40)
+    submit.Position = UDim2.new(0.5,-50,0,100)
+    submit.BackgroundColor3 = Color3.fromRGB(0,170,255)
+    submit.Text = "Submit"
+    submit.TextColor3 = Color3.fromRGB(0,0,0)
+    submit.Font = Enum.Font.GothamBold
+    submit.TextSize = 18
+    submit.Parent = frame
+    
+    submit.MouseButton1Click:Connect(function()
+        if input.Text == Key then
+            keyGui:Destroy()
+        else
+            input.Text = ""
+        end
+    end)
+end
+
+PromptKey()
+
 --// GUI SETUP
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "FlyNoclipGui"
+ScreenGui.Name = "CompactFlyNoclip"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 350, 0, 250)
-MainFrame.Position = UDim2.new(0.3,0,0.3,0)
+MainFrame.Size = UDim2.new(0,300,0,150)
+MainFrame.Position = UDim2.new(0.35,0,0.35,0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
@@ -35,113 +94,106 @@ UICorner.Parent = MainFrame
 
 -- TITLE BAR
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1,0,0,40)
+Title.Size = UDim2.new(1,0,0,35)
 Title.Position = UDim2.new(0,0,0,0)
-Title.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Title.Text = "Fly & Noclip GUI"
+Title.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Title.Text = "Fly & Noclip"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 20
-Title.TextColor3 = Color3.fromRGB(255,255,255)
+Title.TextSize = 18
+Title.TextColor3 = Color3.fromRGB(0,255,255)
 Title.Parent = MainFrame
 
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0,35,0,35)
-CloseBtn.Position = UDim2.new(1,-40,0,2)
+CloseBtn.Size = UDim2.new(0,30,0,30)
+CloseBtn.Position = UDim2.new(1,-35,0,2)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 20
+CloseBtn.TextSize = 18
 CloseBtn.Parent = MainFrame
-
 CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
 local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Size = UDim2.new(0,35,0,35)
-MinimizeBtn.Position = UDim2.new(1,-80,0,2)
+MinimizeBtn.Size = UDim2.new(0,30,0,30)
+MinimizeBtn.Position = UDim2.new(1,-70,0,2)
 MinimizeBtn.BackgroundColor3 = Color3.fromRGB(100,100,255)
 MinimizeBtn.Text = "-"
 MinimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
 MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.TextSize = 20
+MinimizeBtn.TextSize = 18
 MinimizeBtn.Parent = MainFrame
+MinimizeBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
 
--- CONTAINERS
-local FlyFrame = Instance.new("Frame")
-FlyFrame.Size = UDim2.new(1,-20,0,120)
-FlyFrame.Position = UDim2.new(0,10,0,50)
-FlyFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-FlyFrame.Parent = MainFrame
+-- ROWS SETUP
+local function createRow(y)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1,-20,0,40)
+    row.Position = UDim2.new(0,10,0,y)
+    row.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    row.Parent = MainFrame
+    return row
+end
 
-local NoclipFrame = Instance.new("Frame")
-NoclipFrame.Size = UDim2.new(1,-20,0,60)
-NoclipFrame.Position = UDim2.new(0,10,0,180)
-NoclipFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-NoclipFrame.Parent = MainFrame
+local FlyRow = createRow(40)
+local NoclipRow = createRow(90)
 
--- FLY BUTTONS
+-- FLY TOGGLE
 local FlyToggle = Instance.new("TextButton")
-FlyToggle.Size = UDim2.new(0,80,0,40)
-FlyToggle.Position = UDim2.new(0,10,0,10)
-FlyToggle.BackgroundColor3 = Color3.fromRGB(120,0,255)
+FlyToggle.Size = UDim2.new(0,80,0,30)
+FlyToggle.Position = UDim2.new(0,0,0,5)
+FlyToggle.BackgroundColor3 = Color3.fromRGB(0,200,255)
 FlyToggle.Text = "Fly OFF"
-FlyToggle.TextColor3 = Color3.fromRGB(255,255,255)
+FlyToggle.TextColor3 = Color3.fromRGB(0,0,0)
 FlyToggle.Font = Enum.Font.GothamBold
-FlyToggle.TextSize = 18
-FlyToggle.Parent = FlyFrame
+FlyToggle.TextSize = 16
+FlyToggle.Parent = FlyRow
 
-local UpBtn = Instance.new("TextButton")
-UpBtn.Size = UDim2.new(0,60,0,30)
-UpBtn.Position = UDim2.new(0,100,0,10)
-UpBtn.BackgroundColor3 = Color3.fromRGB(0,255,150)
-UpBtn.Text = "UP"
-UpBtn.TextColor3 = Color3.fromRGB(0,0,0)
-UpBtn.Parent = FlyFrame
-
-local DownBtn = Instance.new("TextButton")
-DownBtn.Size = UDim2.new(0,60,0,30)
-DownBtn.Position = UDim2.new(0,170,0,10)
-DownBtn.BackgroundColor3 = Color3.fromRGB(255,200,0)
-DownBtn.Text = "DOWN"
-DownBtn.TextColor3 = Color3.fromRGB(0,0,0)
-DownBtn.Parent = FlyFrame
-
+-- SPEED SLIDER
 local SpeedLabel = Instance.new("TextLabel")
 SpeedLabel.Size = UDim2.new(0,50,0,30)
-SpeedLabel.Position = UDim2.new(0,240,0,10)
+SpeedLabel.Position = UDim2.new(0,90,0,5)
 SpeedLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
 SpeedLabel.Text = tostring(FlySpeed)
 SpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
-SpeedLabel.Parent = FlyFrame
+SpeedLabel.Font = Enum.Font.Gotham
+SpeedLabel.TextSize = 16
+SpeedLabel.Parent = FlyRow
 
 local PlusBtn = Instance.new("TextButton")
-PlusBtn.Size = UDim2.new(0,30,0,30)
-PlusBtn.Position = UDim2.new(0,295,0,10)
+PlusBtn.Size = UDim2.new(0,25,0,30)
+PlusBtn.Position = UDim2.new(0,150,0,5)
 PlusBtn.BackgroundColor3 = Color3.fromRGB(0,255,255)
 PlusBtn.Text = "+"
 PlusBtn.TextColor3 = Color3.fromRGB(0,0,0)
-PlusBtn.Parent = FlyFrame
+PlusBtn.Font = Enum.Font.GothamBold
+PlusBtn.TextSize = 16
+PlusBtn.Parent = FlyRow
 
 local MinusBtn = Instance.new("TextButton")
-MinusBtn.Size = UDim2.new(0,30,0,30)
-MinusBtn.Position = UDim2.new(0,330,0,10)
-MinusBtn.BackgroundColor3 = Color3.fromRGB(255,100,100)
+MinusBtn.Size = UDim2.new(0,25,0,30)
+MinusBtn.Position = UDim2.new(0,180,0,5)
+MinusBtn.BackgroundColor3 = Color3.fromRGB(255,150,0)
 MinusBtn.Text = "-"
 MinusBtn.TextColor3 = Color3.fromRGB(0,0,0)
-MinusBtn.Parent = FlyFrame
+MinusBtn.Font = Enum.Font.GothamBold
+MinusBtn.TextSize = 16
+MinusBtn.Parent = FlyRow
 
--- NOCLIP BUTTON
+-- NOCLIP TOGGLE
 local NoclipToggle = Instance.new("TextButton")
-NoclipToggle.Size = UDim2.new(0,120,0,40)
-NoclipToggle.Position = UDim2.new(0,10,0,10)
-NoclipToggle.BackgroundColor3 = Color3.fromRGB(0,255,100)
+NoclipToggle.Size = UDim2.new(0,120,0,30)
+NoclipToggle.Position = UDim2.new(0,0,0,5)
+NoclipToggle.BackgroundColor3 = Color3.fromRGB(255,215,0)
 NoclipToggle.Text = "Noclip OFF"
 NoclipToggle.TextColor3 = Color3.fromRGB(0,0,0)
 NoclipToggle.Font = Enum.Font.GothamBold
-NoclipToggle.TextSize = 18
-NoclipToggle.Parent = NoclipFrame
+NoclipToggle.TextSize = 16
+NoclipToggle.Parent = NoclipRow
 
 --// FLY FUNCTIONS
 local function StartFlying()
@@ -184,18 +236,6 @@ MinusBtn.MouseButton1Click:Connect(function()
     SpeedLabel.Text = tostring(FlySpeed)
 end)
 
--- UP/DOWN
-UpBtn.MouseButton1Click:Connect(function()
-    if Flying then
-        RootPart.CFrame = RootPart.CFrame + Vector3.new(0,10,0)
-    end
-end)
-DownBtn.MouseButton1Click:Connect(function()
-    if Flying then
-        RootPart.CFrame = RootPart.CFrame - Vector3.new(0,10,0)
-    end
-end)
-
 -- FLY MOVEMENT
 RunService.Heartbeat:Connect(function()
     if Flying and BodyVelocity and BodyGyro then
@@ -232,7 +272,5 @@ RunService.Stepped:Connect(function()
                 part.CanCollide = false
             end
         end
-        Humanoid.WalkSpeed = 16
-        Humanoid.JumpPower = 50
     end
 end)
