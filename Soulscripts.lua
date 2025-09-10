@@ -14,6 +14,7 @@ local Noclipping = false
 local FlySpeed = 50
 local BodyGyro, BodyVelocity
 local MarkedPosition
+local currentTool
 
 --// KEY SYSTEM
 local CorrectKey = "SOULS"
@@ -75,6 +76,25 @@ InfoLabel.TextColor3 = Color3.fromRGB(255,0,0)
 InfoLabel.Font = Enum.Font.GothamBold
 InfoLabel.TextSize = 16
 InfoLabel.Parent = KeyFrame
+
+--// TOOL PRESERVATION
+local function PreserveTool()
+    -- Keep tool attached properly while moving
+    currentTool = Humanoid:FindFirstChildOfClass("Tool")
+    if currentTool then
+        currentTool.Parent = Character
+        local handle = currentTool:FindFirstChild("Handle")
+        if handle then
+            local weld = handle:FindFirstChild("StealWeld") or Instance.new("Weld")
+            weld.Name = "StealWeld"
+            weld.Part0 = Character:FindFirstChild("RightHand")
+            weld.Part1 = handle
+            weld.C0 = CFrame.new()
+            weld.C1 = CFrame.new()
+            weld.Parent = handle
+        end
+    end
+end
 
 --// GUI FUNCTION
 local function CreateMainGUI()
@@ -270,8 +290,10 @@ local function CreateMainGUI()
         end
     end)
 
-    --// FLY MOVEMENT
+    --// FLY MOVEMENT & TOOL PRESERVATION
     RunService.Heartbeat:Connect(function()
+        PreserveTool()
+
         if Flying and BodyVelocity and BodyGyro then
             local moveVector = Vector3.new(
                 (UserInputService:IsKeyDown(Enum.KeyCode.D) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.A) and 1 or 0),
@@ -297,9 +319,6 @@ local function CreateMainGUI()
 
     StealBtn.MouseButton1Click:Connect(function()
         if not MarkedPosition then return end
-        if Character:FindFirstChild("StealVelocity") then
-            Character.StealVelocity:Destroy()
-        end
 
         local bv = Instance.new("BodyVelocity")
         bv.Name = "StealVelocity"
@@ -315,6 +334,8 @@ local function CreateMainGUI()
 
         local connection
         connection = RunService.Heartbeat:Connect(function()
+            PreserveTool()
+
             local direction = (MarkedPosition - RootPart.Position)
             local distance = direction.Magnitude
             if distance < 1 then
