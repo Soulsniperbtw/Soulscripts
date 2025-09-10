@@ -16,112 +16,76 @@ local BodyGyro, BodyVelocity
 local MarkedPosition
 
 --// KEY SYSTEM
-local Key = "1234" -- set your key here
+local CorrectKey = "SOULS"
 
-local function PromptKey(callback)
-    local keyGui = Instance.new("ScreenGui")
-    keyGui.Name = "KeyPrompt"
-    keyGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+local KeyGui = Instance.new("ScreenGui")
+KeyGui.Name = "KeyGui"
+KeyGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+KeyGui.ResetOnSpawn = false
 
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0,250,0,140)
-    frame.Position = UDim2.new(0.5,-125,0.5,-70)
-    frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-    frame.BorderSizePixel = 0
-    frame.Parent = keyGui
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Size = UDim2.new(0, 300, 0, 150)
+KeyFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Parent = KeyGui
+KeyFrame.Active = true
+KeyFrame.Draggable = true
 
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0,10)
-    UICorner.Parent = frame
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0,12)
+UICorner.Parent = KeyFrame
 
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1,0,0,25)
-    title.Position = UDim2.new(0,0,0,0)
-    title.BackgroundTransparency = 1
-    title.Text = "Souls Script"
-    title.TextColor3 = Color3.fromRGB(128,0,128)
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 20
-    title.Parent = frame
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1,0,0,40)
+Title.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Title.Text = "Enter The Key"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 20
+Title.TextColor3 = Color3.fromRGB(0, 0, 139)
+Title.Parent = KeyFrame
 
-    local instruction = Instance.new("TextLabel")
-    instruction.Size = UDim2.new(1,0,0,30)
-    instruction.Position = UDim2.new(0,0,0,30)
-    instruction.BackgroundTransparency = 1
-    instruction.Text = "Enter The Key"
-    instruction.TextColor3 = Color3.fromRGB(0,0,139)
-    instruction.Font = Enum.Font.GothamBold
-    instruction.TextSize = 18
-    instruction.Parent = frame
+local KeyBox = Instance.new("TextBox")
+KeyBox.Size = UDim2.new(0,200,0,40)
+KeyBox.Position = UDim2.new(0.5,-100,0,50)
+KeyBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
+KeyBox.TextColor3 = Color3.fromRGB(255,255,255)
+KeyBox.Font = Enum.Font.Gotham
+KeyBox.TextSize = 20
+KeyBox.ClearTextOnFocus = false
+KeyBox.PlaceholderText = "Type Key Here"
+KeyBox.Parent = KeyFrame
 
-    local input = Instance.new("TextBox")
-    input.Size = UDim2.new(0,150,0,30)
-    input.Position = UDim2.new(0.5,-75,0,65)
-    input.BackgroundColor3 = Color3.fromRGB(255,255,255)
-    input.Text = ""
-    input.PlaceholderText = "Type key here"
-    input.ClearTextOnFocus = false
-    input.TextColor3 = Color3.fromRGB(0,0,0)
-    input.Font = Enum.Font.Gotham
-    input.TextSize = 16
-    input.Parent = frame
+local SubmitBtn = Instance.new("TextButton")
+SubmitBtn.Size = UDim2.new(0,120,0,40)
+SubmitBtn.Position = UDim2.new(0.5,-60,0,100)
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(120,0,255)
+SubmitBtn.Text = "Submit"
+SubmitBtn.TextColor3 = Color3.fromRGB(255,255,255)
+SubmitBtn.Font = Enum.Font.GothamBold
+SubmitBtn.TextSize = 18
+SubmitBtn.Parent = KeyFrame
 
-    local feedback = Instance.new("TextLabel")
-    feedback.Size = UDim2.new(1,0,0,20)
-    feedback.Position = UDim2.new(0,0,0,100)
-    feedback.BackgroundTransparency = 1
-    feedback.Text = ""
-    feedback.TextColor3 = Color3.fromRGB(255,255,255)
-    feedback.Font = Enum.Font.GothamBold
-    feedback.TextSize = 16
-    feedback.Parent = frame
+local InfoLabel = Instance.new("TextLabel")
+InfoLabel.Size = UDim2.new(1,0,0,30)
+InfoLabel.Position = UDim2.new(0,0,0,135)
+InfoLabel.BackgroundTransparency = 1
+InfoLabel.Text = ""
+InfoLabel.TextColor3 = Color3.fromRGB(255,0,0)
+InfoLabel.Font = Enum.Font.GothamBold
+InfoLabel.TextSize = 16
+InfoLabel.Parent = KeyFrame
 
-    local submit = Instance.new("TextButton")
-    submit.Size = UDim2.new(0,80,0,30)
-    submit.Position = UDim2.new(0.5,-40,0,115)
-    submit.BackgroundColor3 = Color3.fromRGB(0,170,255)
-    submit.Text = "Submit"
-    submit.TextColor3 = Color3.fromRGB(0,0,0)
-    submit.Font = Enum.Font.GothamBold
-    submit.TextSize = 16
-    submit.Parent = frame
-
-    local function addNeonEffect(button, mainColor, gradientColor)
-        -- Add outline glow
-        local stroke = Instance.new("UIStroke")
-        stroke.Parent = button
-        stroke.Thickness = 2
-        stroke.Color = mainColor
-        stroke.Transparency = 0.3
-        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-        -- Add gradient
-        local gradient = Instance.new("UIGradient")
-        gradient.Parent = button
-        gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, mainColor), ColorSequenceKeypoint.new(1, gradientColor)})
-        gradient.Rotation = 45
-    end
-
-    submit.MouseButton1Click:Connect(function()
-        if input.Text == Key then
-            keyGui:Destroy()
-            if callback then callback() end
-        else
-            feedback.Text = "Wrong key! Try again."
-        end
-    end)
-end
-
---// MAIN GUI
+--// GUI FUNCTION
 local function CreateMainGUI()
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "CompactFlyNoclip"
+    ScreenGui.Name = "FlyNoclipGui"
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
     ScreenGui.ResetOnSpawn = false
 
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0,320,0,220)
-    MainFrame.Position = UDim2.new(0.35,0,0.35,0)
+    MainFrame.Size = UDim2.new(0, 350, 0, 250)
+    MainFrame.Position = UDim2.new(0.3,0,0.3,0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
@@ -132,179 +96,118 @@ local function CreateMainGUI()
     UICorner.CornerRadius = UDim.new(0,12)
     UICorner.Parent = MainFrame
 
-    -- TITLE & BUTTONS
+    -- TITLE
     local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,0,0,35)
+    Title.Size = UDim2.new(1,0,0,40)
     Title.Position = UDim2.new(0,0,0,0)
-    Title.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    Title.Text = "Fly & Noclip"
+    Title.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    Title.Text = "Fly & Noclip GUI"
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 18
-    Title.TextColor3 = Color3.fromRGB(0,255,255)
+    Title.TextSize = 20
+    Title.TextColor3 = Color3.fromRGB(255,255,255)
     Title.Parent = MainFrame
 
     local CloseBtn = Instance.new("TextButton")
-    CloseBtn.Size = UDim2.new(0,30,0,30)
-    CloseBtn.Position = UDim2.new(1,-35,0,2)
+    CloseBtn.Size = UDim2.new(0,35,0,35)
+    CloseBtn.Position = UDim2.new(1,-40,0,2)
     CloseBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
     CloseBtn.Text = "X"
     CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
     CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextSize = 18
+    CloseBtn.TextSize = 20
     CloseBtn.Parent = MainFrame
+
     CloseBtn.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
     end)
 
-    local MinimizeBtn = Instance.new("TextButton")
-    MinimizeBtn.Size = UDim2.new(0,30,0,30)
-    MinimizeBtn.Position = UDim2.new(1,-70,0,2)
-    MinimizeBtn.BackgroundColor3 = Color3.fromRGB(100,100,255)
-    MinimizeBtn.Text = "-"
-    MinimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-    MinimizeBtn.Font = Enum.Font.GothamBold
-    MinimizeBtn.TextSize = 18
-    MinimizeBtn.Parent = MainFrame
-    MinimizeBtn.MouseButton1Click:Connect(function()
-        MainFrame.Visible = not MainFrame.Visible
-    end)
+    -- CONTAINERS
+    local FlyFrame = Instance.new("Frame")
+    FlyFrame.Size = UDim2.new(1,-20,0,60)
+    FlyFrame.Position = UDim2.new(0,10,0,50)
+    FlyFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    FlyFrame.Parent = MainFrame
 
-    local function createRow(y)
-        local row = Instance.new("Frame")
-        row.Size = UDim2.new(1,-20,0,40)
-        row.Position = UDim2.new(0,10,0,y)
-        row.BackgroundColor3 = Color3.fromRGB(30,30,30)
-        row.Parent = MainFrame
-        return row
-    end
+    local NoclipFrame = Instance.new("Frame")
+    NoclipFrame.Size = UDim2.new(1,-20,0,60)
+    NoclipFrame.Position = UDim2.new(0,10,0,120)
+    NoclipFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    NoclipFrame.Parent = MainFrame
 
-    local FlyRow = createRow(40)
-    local NoclipRow = createRow(90)
-    local StealRow = createRow(140)
+    local StealFrame = Instance.new("Frame")
+    StealFrame.Size = UDim2.new(1,-20,0,60)
+    StealFrame.Position = UDim2.new(0,10,0,190)
+    StealFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    StealFrame.Parent = MainFrame
 
-    -- FLY
+    -- FLY BUTTONS
     local FlyToggle = Instance.new("TextButton")
-    FlyToggle.Size = UDim2.new(0,80,0,30)
-    FlyToggle.Position = UDim2.new(0,0,0,5)
-    FlyToggle.BackgroundColor3 = Color3.fromRGB(0,200,255)
+    FlyToggle.Size = UDim2.new(0,80,0,40)
+    FlyToggle.Position = UDim2.new(0,10,0,10)
+    FlyToggle.BackgroundColor3 = Color3.fromRGB(120,0,255)
     FlyToggle.Text = "Fly OFF"
-    FlyToggle.TextColor3 = Color3.fromRGB(0,0,0)
+    FlyToggle.TextColor3 = Color3.fromRGB(255,255,255)
     FlyToggle.Font = Enum.Font.GothamBold
-    FlyToggle.TextSize = 16
-    FlyToggle.Parent = FlyRow
-
-    local SpeedLabel = Instance.new("TextLabel")
-    SpeedLabel.Size = UDim2.new(0,50,0,30)
-    SpeedLabel.Position = UDim2.new(0,90,0,5)
-    SpeedLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    SpeedLabel.Text = tostring(FlySpeed)
-    SpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
-    SpeedLabel.Font = Enum.Font.Gotham
-    SpeedLabel.TextSize = 16
-    SpeedLabel.Parent = FlyRow
+    FlyToggle.TextSize = 18
+    FlyToggle.Parent = FlyFrame
 
     local PlusBtn = Instance.new("TextButton")
-    PlusBtn.Size = UDim2.new(0,25,0,30)
-    PlusBtn.Position = UDim2.new(0,150,0,5)
+    PlusBtn.Size = UDim2.new(0,30,0,30)
+    PlusBtn.Position = UDim2.new(0,100,0,10)
     PlusBtn.BackgroundColor3 = Color3.fromRGB(0,255,255)
     PlusBtn.Text = "+"
     PlusBtn.TextColor3 = Color3.fromRGB(0,0,0)
-    PlusBtn.Font = Enum.Font.GothamBold
-    PlusBtn.TextSize = 16
-    PlusBtn.Parent = FlyRow
+    PlusBtn.Parent = FlyFrame
 
     local MinusBtn = Instance.new("TextButton")
-    MinusBtn.Size = UDim2.new(0,25,0,30)
-    MinusBtn.Position = UDim2.new(0,180,0,5)
-    MinusBtn.BackgroundColor3 = Color3.fromRGB(255,150,0)
+    MinusBtn.Size = UDim2.new(0,30,0,30)
+    MinusBtn.Position = UDim2.new(0,140,0,10)
+    MinusBtn.BackgroundColor3 = Color3.fromRGB(255,100,100)
     MinusBtn.Text = "-"
     MinusBtn.TextColor3 = Color3.fromRGB(0,0,0)
-    MinusBtn.Font = Enum.Font.GothamBold
-    MinusBtn.TextSize = 16
-    MinusBtn.Parent = FlyRow
+    MinusBtn.Parent = FlyFrame
 
-    -- NOCLIP
+    local SpeedLabel = Instance.new("TextLabel")
+    SpeedLabel.Size = UDim2.new(0,50,0,30)
+    SpeedLabel.Position = UDim2.new(0,180,0,10)
+    SpeedLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    SpeedLabel.Text = tostring(FlySpeed)
+    SpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    SpeedLabel.Parent = FlyFrame
+
+    -- NOCLIP BUTTON
     local NoclipToggle = Instance.new("TextButton")
-    NoclipToggle.Size = UDim2.new(0,120,0,30)
-    NoclipToggle.Position = UDim2.new(0,0,0,5)
-    NoclipToggle.BackgroundColor3 = Color3.fromRGB(255,215,0)
+    NoclipToggle.Size = UDim2.new(0,120,0,40)
+    NoclipToggle.Position = UDim2.new(0,10,0,10)
+    NoclipToggle.BackgroundColor3 = Color3.fromRGB(0,255,100)
     NoclipToggle.Text = "Noclip OFF"
     NoclipToggle.TextColor3 = Color3.fromRGB(0,0,0)
     NoclipToggle.Font = Enum.Font.GothamBold
-    NoclipToggle.TextSize = 16
-    NoclipToggle.Parent = NoclipRow
+    NoclipToggle.TextSize = 18
+    NoclipToggle.Parent = NoclipFrame
 
-    -- MARK LOCATION
+    -- STEAL BUTTONS
     local MarkBtn = Instance.new("TextButton")
-    MarkBtn.Size = UDim2.new(0,120,0,30)
-    MarkBtn.Position = UDim2.new(0,0,0,5)
-    MarkBtn.BackgroundColor3 = Color3.fromRGB(0,255,0)
+    MarkBtn.Size = UDim2.new(0,120,0,40)
+    MarkBtn.Position = UDim2.new(0,10,0,10)
+    MarkBtn.BackgroundColor3 = Color3.fromRGB(255,165,0)
     MarkBtn.Text = "Mark Location"
     MarkBtn.TextColor3 = Color3.fromRGB(0,0,0)
     MarkBtn.Font = Enum.Font.GothamBold
-    MarkBtn.TextSize = 16
-    MarkBtn.Parent = StealRow
-    MarkBtn.MouseButton1Click:Connect(function()
-        MarkedPosition = RootPart.Position
-    end)
+    MarkBtn.TextSize = 18
+    MarkBtn.Parent = StealFrame
 
-    -- INSTANT STEAL WITH ACCELERATION
     local StealBtn = Instance.new("TextButton")
-    StealBtn.Size = UDim2.new(0,120,0,30)
-    StealBtn.Position = UDim2.new(0,140,0,5)
-    StealBtn.BackgroundColor3 = Color3.fromRGB(255,0,255)
+    StealBtn.Size = UDim2.new(0,120,0,40)
+    StealBtn.Position = UDim2.new(0,150,0,10)
+    StealBtn.BackgroundColor3 = Color3.fromRGB(255,0,0)
     StealBtn.Text = "Instant Steal"
-    StealBtn.TextColor3 = Color3.fromRGB(0,0,0)
+    StealBtn.TextColor3 = Color3.fromRGB(255,255,255)
     StealBtn.Font = Enum.Font.GothamBold
-    StealBtn.TextSize = 16
-    StealBtn.Parent = StealRow
+    StealBtn.TextSize = 18
+    StealBtn.Parent = StealFrame
 
-    local function addNeon(button, mainC, gradC)
-        local stroke = Instance.new("UIStroke")
-        stroke.Parent = button
-        stroke.Thickness = 2
-        stroke.Color = mainC
-        stroke.Transparency = 0.2
-        local gradient = Instance.new("UIGradient")
-        gradient.Parent = button
-        gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, mainC), ColorSequenceKeypoint.new(1, gradC)})
-        gradient.Rotation = 45
-    end
-
-    addNeon(FlyToggle, Color3.fromRGB(0,255,255), Color3.fromRGB(0,150,255))
-    addNeon(NoclipToggle, Color3.fromRGB(255,215,0), Color3.fromRGB(255,165,0))
-    addNeon(MarkBtn, Color3.fromRGB(0,255,0), Color3.fromRGB(0,150,0))
-    addNeon(StealBtn, Color3.fromRGB(255,0,255), Color3.fromRGB(150,0,150))
-    addNeon(PlusBtn, Color3.fromRGB(0,255,255), Color3.fromRGB(0,150,255))
-    addNeon(MinusBtn, Color3.fromRGB(255,150,0), Color3.fromRGB(200,50,50))
-
-    StealBtn.MouseButton1Click:Connect(function()
-        if not MarkedPosition then return end
-        if Character:FindFirstChild("StealVelocity") then
-            Character.StealVelocity:Destroy()
-        end
-
-        local bv = Instance.new("BodyVelocity")
-        bv.Name = "StealVelocity"
-        bv.MaxForce = Vector3.new(1e6,1e6,1e6)
-        bv.Velocity = Vector3.new()
-        bv.Parent = RootPart
-
-        local connection
-        connection = RunService.Heartbeat:Connect(function()
-            local direction = (MarkedPosition - RootPart.Position)
-            local distance = direction.Magnitude
-            if distance < 1 then
-                bv:Destroy()
-                connection:Disconnect()
-            else
-                local speed = math.clamp(distance * 10, 20, 150)
-                bv.Velocity = direction.Unit * speed
-            end
-        end)
-    end)
-
-    -- FLY LOGIC
+    --// FLY FUNCTIONS
     local function StartFlying()
         if Flying then return end
         Flying = true
@@ -345,23 +248,7 @@ local function CreateMainGUI()
         SpeedLabel.Text = tostring(FlySpeed)
     end)
 
-    RunService.Heartbeat:Connect(function()
-        if Flying and BodyVelocity and BodyGyro then
-            local MoveVector = Vector3.new(
-                (UserInputService:IsKeyDown(Enum.KeyCode.D) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.A) and 1 or 0),
-                0,
-                (UserInputService:IsKeyDown(Enum.KeyCode.S) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.W) and 1 or 0)
-            )
-            if MoveVector.Magnitude > 0 then
-                BodyVelocity.Velocity = workspace.CurrentCamera.CFrame:VectorToWorldSpace(MoveVector.Unit * FlySpeed)
-            else
-                BodyVelocity.Velocity = Vector3.new()
-            end
-            BodyGyro.CFrame = workspace.CurrentCamera.CFrame
-        end
-    end)
-
-    -- Noclip
+    --// NOCLIP FUNCTIONS
     NoclipToggle.MouseButton1Click:Connect(function()
         Noclipping = not Noclipping
         if Noclipping then
@@ -382,7 +269,80 @@ local function CreateMainGUI()
             end
         end
     end)
+
+    --// FLY MOVEMENT
+    RunService.Heartbeat:Connect(function()
+        if Flying and BodyVelocity and BodyGyro then
+            local moveVector = Vector3.new(
+                (UserInputService:IsKeyDown(Enum.KeyCode.D) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.A) and 1 or 0),
+                0,
+                (UserInputService:IsKeyDown(Enum.KeyCode.S) and 1 or 0) - (UserInputService:IsKeyDown(Enum.KeyCode.W) and 1 or 0)
+            )
+
+            if moveVector.Magnitude > 0 then
+                local targetVelocity = workspace.CurrentCamera.CFrame:VectorToWorldSpace(moveVector.Unit * FlySpeed)
+                BodyVelocity.Velocity = BodyVelocity.Velocity:Lerp(targetVelocity, 0.15)
+            else
+                BodyVelocity.Velocity = BodyVelocity.Velocity:Lerp(Vector3.new(), 0.15)
+            end
+
+            BodyGyro.CFrame = BodyGyro.CFrame:Lerp(workspace.CurrentCamera.CFrame, 0.1)
+        end
+    end)
+
+    --// MARK & INSTANT STEAL
+    MarkBtn.MouseButton1Click:Connect(function()
+        MarkedPosition = RootPart.Position
+    end)
+
+    StealBtn.MouseButton1Click:Connect(function()
+        if not MarkedPosition then return end
+        if Character:FindFirstChild("StealVelocity") then
+            Character.StealVelocity:Destroy()
+        end
+
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = "StealVelocity"
+        bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+        bv.Velocity = Vector3.new()
+        bv.Parent = RootPart
+
+        local bg = Instance.new("BodyGyro")
+        bg.Name = "StealGyro"
+        bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
+        bg.CFrame = RootPart.CFrame
+        bg.Parent = RootPart
+
+        local connection
+        connection = RunService.Heartbeat:Connect(function()
+            local direction = (MarkedPosition - RootPart.Position)
+            local distance = direction.Magnitude
+            if distance < 1 then
+                bv:Destroy()
+                bg:Destroy()
+                connection:Disconnect()
+                RootPart.CFrame = CFrame.new(MarkedPosition)
+            else
+                local frictionFactor = math.clamp(distance / 20, 0.2, 1)
+                local baseSpeed = math.clamp(distance * 2, 5, 40)
+                local speed = baseSpeed * frictionFactor
+                bv.Velocity = bv.Velocity:Lerp(direction.Unit * speed, 0.1)
+
+                local tiltAngle = math.rad(-30 * frictionFactor)
+                local lookCFrame = CFrame.new(RootPart.Position, RootPart.Position + direction)
+                bg.CFrame = lookCFrame * CFrame.Angles(tiltAngle, 0, 0)
+            end
+        end)
+    end)
 end
 
--- Launch key system first
-PromptKey(CreateMainGUI)
+--// KEY SUBMISSION
+SubmitBtn.MouseButton1Click:Connect(function()
+    local inputKey = KeyBox.Text:upper()
+    if inputKey == CorrectKey then
+        KeyGui:Destroy()
+        CreateMainGUI()
+    else
+        InfoLabel.Text = "Wrong key! Try again."
+    end
+end)
